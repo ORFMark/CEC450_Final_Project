@@ -9,11 +9,12 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <sys/time.h>
 #include <iostream>
-
+#include <syslog.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <string>
 
 using namespace cv;
 using namespace std;
@@ -22,13 +23,29 @@ using namespace std;
 //Defined resolution in project, can choose something else but decide not to.
 #define HRES 640
 #define VRES 480
+#define PROJECT_TAG "BG_RT_Final"
+bool USE_PRINTF = true;
+
+
 
 
 double getTimeMsec(void);
-
+void log(string thingToLog, int logLevel);
+void log(string thingToLog);
 
 int main( int argc, char** argv )
 {
+    if (argc < 2) {
+        printf("Usage: capture -v for printf, -s for syslog");
+        return 0;
+    }
+    else if(argc == 2) {
+        string argument(argv[1]);
+        if (argument.compare("v"))
+            USE_PRINTF = true;
+        else
+            USE_PRINTF = false;
+    }
     double event_time, run_time=0.0;
     cvNamedWindow("Capture Example", CV_WINDOW_AUTOSIZE);
     CvCapture* capture = cvCreateCameraCapture(0);
@@ -76,16 +93,32 @@ void print_scheduler(void)
    switch(schedType)
    {
      case SCHED_FIFO:
-           printf("Pthread Policy is SCHED_FIFO\n");
+           log("Pthread Policy is SCHED_FIFO\n");
            break;
      case SCHED_OTHER:
-           printf("Pthread Policy is SCHED_OTHER\n");
+           log("Pthread Policy is SCHED_OTHER\n");
        	   break;
      case SCHED_RR:
-           printf("Pthread Policy is SCHED_RR\n");
+           log("Pthread Policy is SCHED_RR\n");
            break;
      default:
-       printf("Pthread Policy is UNKNOWN\n");
+       log("Pthread Policy is UNKNOWN\n");
    }
 
+}
+
+void log(string thingToLog) {
+   log(thingToLog, LOG_INFO);
+}
+
+void log(string thingToLog, int logLevel) {
+    struct timeval tv;
+   gettimeofday(&tv, (struct timezone *) 0);
+   if(USE_PRINTF) {
+     cout << PROJECT_TAG << ": SEC:USEC; " << tv.tv_sec << ":" << tv.tv_usec 
+        << "; " << thingToLog << endl;
+   }
+     syslog(logLevel, "%s; SEC:USEC; %d:%d; %s", PROJECT_TAG
+        , tv.tv_sec, tv.tv_usec, thingToLog);
+   
 }
