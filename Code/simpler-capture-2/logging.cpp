@@ -1,5 +1,8 @@
 #include "logging.h"
 #include <syslog.h>
+#include <sys/time.h>
+#include <iostream>
+using namespace std;
 
 void log(string thingToLog) {
    log(thingToLog, LOG_INFO);

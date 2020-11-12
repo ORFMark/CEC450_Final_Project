@@ -15,6 +15,9 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
+#include "logging.h"
+
+
 
 using namespace cv;
 using namespace std;
@@ -23,15 +26,9 @@ using namespace std;
 //Defined resolution in project, can choose something else but decide not to.
 #define HRES 640
 #define VRES 480
-#define PROJECT_TAG "BG_RT_Final"
-bool USE_PRINTF = true;
-
-
 
 
 double getTimeMsec(void);
-void log(string thingToLog, int logLevel);
-void log(string thingToLog);
 
 int main( int argc, char** argv )
 {
@@ -41,10 +38,10 @@ int main( int argc, char** argv )
     }
     else if(argc == 2) {
         string argument(argv[1]);
-        if (argument.compare("v"))
-            USE_PRINTF = true;
-        else
-            USE_PRINTF = false;
+//        if (argument.compare("v"))
+ //           USE_PRINTF = true;
+  //      else
+   //         USE_PRINTF = false;
     }
     double event_time, run_time=0.0;
     cvNamedWindow("Capture Example", CV_WINDOW_AUTOSIZE);
