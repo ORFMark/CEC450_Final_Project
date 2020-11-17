@@ -1,15 +1,23 @@
+#ifndef FRAME_HANDLER
+#define FRAME_HANDLER
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
+using namespace cv;
 typedef struct FRAME_QUEUE {
-    IplImage* frame[];
     int nextFrameIndex;
-    int lastFrameIndex;
+    int numberOfFrames;
+    int maxSize;
+    IplImage** frames;
 } FrameQueue;
 
 FrameQueue initQueue(int size);
-int enqueue(FrameQueue* queue, IplImage* frame);
+bool enqueue(FrameQueue* queue, IplImage* frame);
 IplImage* dequeue(FrameQueue* queue);
+bool isEmpty(FrameQueue* queue);
 
-void captureFrame()
-void writebackFrame(int frameNum, )
+IplImage* captureFrame(CvCapture* camToCaptureFrom);
+void writebackFrame(int frameNum, IplImage* frame);
+
+void writeBackFrameService(int frameNumber, FrameQueue* frameQueue);
+void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue);
+#endif

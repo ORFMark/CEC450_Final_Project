@@ -10,7 +10,7 @@ CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
 
 HFILES= logging.h
 CFILES= 
-CPPFILES= capture.cpp logging.cpp
+CPPFILES= capture.cpp logging.cpp frame_handling.cpp util.cpp
 
 SRCS= ${HFILES} ${CFILES}
 CPPOBJS= ${CPPFILES:.cpp=.o}
