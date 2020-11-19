@@ -28,7 +28,7 @@ using namespace std;
 #define HRES 640
 #define VRES 480
 
-
+bool USE_PRINTF;
 
 int main( int argc, char** argv )
 {
@@ -38,10 +38,10 @@ int main( int argc, char** argv )
     }
     else if(argc == 2) {
         string argument(argv[1]);
-//        if (argument.compare("v"))
- //           USE_PRINTF = true;
-  //      else
-   //         USE_PRINTF = false;
+        if (argument.compare("v"))
+          USE_PRINTF = true;
+        else
+            USE_PRINTF = false;
     }
     double event_time, run_time=0.0;
     cvNamedWindow("Capture Example", CV_WINDOW_AUTOSIZE);
