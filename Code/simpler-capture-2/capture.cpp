@@ -27,7 +27,7 @@ using namespace std;
 bool USE_PRINTF = true;
 
 
-
+struct timeval start_time_val;
 
 double getTimeMsec(void);
 void log(string thingToLog, int logLevel);
