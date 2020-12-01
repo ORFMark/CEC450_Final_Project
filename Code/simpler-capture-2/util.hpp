@@ -2,6 +2,8 @@
 #define UTIL_C
 #include <stdlib.h>
 #include <sys/time.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #define USEC_PER_MSEC (1000)
 #define NANOSEC_PER_SEC (1000000000)
