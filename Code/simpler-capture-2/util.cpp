@@ -4,10 +4,6 @@
 #include <sys/time.h>
 #include "util.hpp"
 #include "logging.h"
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 double getTimeMsec(void)
 {
   struct timespec event_ts = {0, 0};

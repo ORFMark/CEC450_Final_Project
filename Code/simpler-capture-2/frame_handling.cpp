@@ -68,15 +68,15 @@ void writebackFrame(int frameNum, IplImage* frame) {
     imwrite(fileName.c_str(), img);
 }
 
-void writeBackFrameService(threadParams_t* params) {
+void writeBackFrameService(FrameQueue* frameQueue) {
     static int frameNumber = 0;
-    while(!isEmpty(params->queue)) {
-        writebackFrame(frameNumber, dequeue(params->queue));
-        params->frameNumber++;
+    while(!isEmpty(frameQueue)) {
+        writebackFrame(frameNumber, dequeue(frameQueue));
+        frameNumber++;
     }    
 }
-void captureFrameServuce(threadParams_t* params) {
-    enqueue(params->queue, captureFrame(params->camera));
+void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue) {
+    enqueue(frameQueue, captureFrame(camToCaptureFrom));
 }
 
 

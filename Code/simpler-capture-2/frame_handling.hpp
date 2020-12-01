@@ -2,7 +2,6 @@
 #define FRAME_HANDLER
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <util.hpp>
 using namespace cv;
 typedef struct FRAME_QUEUE {
     int nextFrameIndex;
@@ -19,6 +18,6 @@ bool isEmpty(FrameQueue* queue);
 IplImage* captureFrame(CvCapture* camToCaptureFrom);
 void writebackFrame(int frameNum, IplImage* frame);
 
-void writeBackFrameService(threadParams_t* prams);
-void captureFrameServuce(threadParams_t* prams);
+void writeBackFrameService(int frameNumber, FrameQueue* frameQueue);
+void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue);
 #endif
