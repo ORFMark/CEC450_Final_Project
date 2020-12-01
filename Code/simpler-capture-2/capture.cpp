@@ -16,6 +16,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
 #include "sequencerUtil.hpp"
+#include "util.hpp"
 using namespace cv;
 using namespace std;
 
