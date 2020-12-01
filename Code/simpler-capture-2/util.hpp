@@ -10,6 +10,19 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+
+typedef struct FRAME {
+	IplImage* image;
+	double capture_timestamp;
+} Frame;
+
+typedef struct FRAME_QUEUE {
+    int nextFrameIndex;
+    int numberOfFrames;
+    int maxSize;
+    Frame* frames;
+} FrameQueue;
+
 typedef struct
 {
     int threadIdx;
