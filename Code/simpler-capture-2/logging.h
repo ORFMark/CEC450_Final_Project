@@ -1,7 +1,7 @@
 #ifndef LOGGING_BG
 #define LOGGING_BG
 #include <string>
-#define PROJECT_TAG "BG_RT_Final"
+#define PROJECT_TAG "BGRTR_RT_Final"
 extern bool USE_PRINTF;
 
 using namespace std;
