@@ -88,8 +88,6 @@ int main(void)
 
    printf("System has %d processors configured and %d available.\n", get_nprocs_conf(), get_nprocs());
 
-   pointer_to_shared_image = NULL;
-
    CPU_ZERO(&allcpuset);
 
    for(i=0; i < NUM_CPU_CORES; i++)

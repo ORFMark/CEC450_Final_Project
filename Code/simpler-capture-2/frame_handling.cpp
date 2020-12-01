@@ -14,7 +14,7 @@ using namespace cv;
 
 FrameQueue initQueue(int size) {
    FrameQueue theQueue;
-   theQueue.frames = (Frame**) malloc(size * sizeof(*Frame));
+   theQueue.frames = (Frame**) malloc(size * sizeof(Frame*));
    theQueue.nextFrameIndex = 0;
    theQueue.numberOfFrames = 0;
    if(theQueue.frames != NULL) {
