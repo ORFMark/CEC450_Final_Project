@@ -51,16 +51,20 @@ IplImage* dequeue(FrameQueue* queue) {
     return frame;
 }
 
-IplImage* captureFrame(CvCapture* camToCaptureFrom) {
-    IplImage* frame = cvQueryFrame(camToCaptureFrom);
+Frame captureFrame(CvCapture* camToCaptureFrom) {
+    IplImage* img = cvQueryFrame(camToCaptureFrom);
+	double time = getTimeMsec();
+	Frame frame;
+	frame.frame = img;
+	frame.capture_timestamp = time;
     return frame;
 }
 
 
-void writebackFrame(int frameNum, IplImage* frame) {
+void writebackFrame(int frameNum, Frame frame) {
     static Mat img;
-    double msecTime = getTimeMsec();
-    img = cvarrToMat(frame);
+    double msecTime = frame->capture_timestamp;
+    img = cvarrToMat(frame->frame);
     String headerString = "Frame: " + to_string(frameNum) + "   msecTime: " + to_string(msecTime);
     putText(img, headerString, cv::Point2f(100,100), cv::FONT_HERSHEY_PLAIN
         , 2, cv::Scalar(0,0,255,255));

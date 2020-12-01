@@ -4,21 +4,27 @@
 #include <opencv2/highgui/highgui.hpp>
 #include "util.hpp"
 using namespace cv;
+
+typedef struct FRAME {
+	IplImage* image;
+	double capture_timestamp;
+} Frame;
+
 typedef struct FRAME_QUEUE {
     int nextFrameIndex;
     int numberOfFrames;
     int maxSize;
-    IplImage** frames;
+    Frame* frames;
 } FrameQueue;
 
 FrameQueue initQueue(int size);
-bool enqueue(FrameQueue* queue, IplImage* frame);
-IplImage* dequeue(FrameQueue* queue);
+bool enqueue(FrameQueue* queue, Frame frame);
+Frame dequeue(FrameQueue* queue);
 bool isEmpty(FrameQueue* queue);
 
-IplImage* captureFrame(CvCapture* camToCaptureFrom);
-void writebackFrame(int frameNum, IplImage* frame);
+Frame captureFrame(CvCapture* camToCaptureFrom);
+void writebackFrame(int frameNum, Frame frame);
 
-void writeBackFrameService(int frameNumber, FrameQueue* frameQueue);
-void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue);
+void writeBackFrameService(void* params);
+void captureFrameServuce(void* params);
 #endif
