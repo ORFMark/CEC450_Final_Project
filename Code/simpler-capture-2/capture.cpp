@@ -183,7 +183,7 @@ int main(void)
     //
     rt_param[2].sched_priority=rt_max_prio-2;
     pthread_attr_setschedparam(&rt_sched_attr[2], &rt_param[2]);
-    rc=pthread_create(&threads[2], &rt_sched_attr[2], captureFrameServuce, (void *)&(threadParams[2]));
+    rc=pthread_create(&threads[2], &rt_sched_attr[2], captureFrameService, (void *)&(threadParams[2]));
     if(rc < 0)
         perror("pthread_create for service 2");
     else
