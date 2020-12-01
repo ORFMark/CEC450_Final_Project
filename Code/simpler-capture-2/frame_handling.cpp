@@ -14,7 +14,7 @@ using namespace cv;
 
 FrameQueue initQueue(int size) {
    FrameQueue theQueue;
-   theQueue.frames = (IplImage**) malloc(size * sizeof(IplImage*));
+   theQueue.frames = (Frame) malloc(size * sizeof(Frame));
    theQueue.nextFrameIndex = 0;
    theQueue.numberOfFrames = 0;
    if(theQueue.frames != NULL) {
@@ -27,7 +27,8 @@ FrameQueue initQueue(int size) {
 bool isEmpty(FrameQueue* queue) {
    return queue->numberOfFrames == 0;
 }
-bool enqueue(FrameQueue* queue, IplImage* frame) {
+
+bool enqueue(FrameQueue* queue, Frame* frame) {
     if(queue->numberOfFrames < queue->maxSize) {
         queue->frames[queue->nextFrameIndex] = frame;
         queue->nextFrameIndex = queue->nextFrameIndex + 1 % queue->maxSize;
@@ -37,8 +38,8 @@ bool enqueue(FrameQueue* queue, IplImage* frame) {
      return false;
 }
 
-IplImage* dequeue(FrameQueue* queue) {
-    IplImage* frame = NULL;
+Frame dequeue(FrameQueue* queue) {
+    Frame frame = NULL;
     if(queue->numberOfFrames < queue->maxSize) {
         if(queue->nextFrameIndex != 0) { 
             frame = queue->frames[--queue->nextFrameIndex];
