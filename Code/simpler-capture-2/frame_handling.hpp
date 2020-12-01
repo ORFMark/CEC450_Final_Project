@@ -5,17 +5,7 @@
 #include "util.hpp"
 using namespace cv;
 
-typedef struct FRAME {
-	IplImage* image;
-	double capture_timestamp;
-} Frame;
 
-typedef struct FRAME_QUEUE {
-    int nextFrameIndex;
-    int numberOfFrames;
-    int maxSize;
-    Frame* frames;
-} FrameQueue;
 
 FrameQueue initQueue(int size);
 bool enqueue(FrameQueue* queue, Frame frame);
