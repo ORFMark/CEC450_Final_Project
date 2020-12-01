@@ -1,5 +1,7 @@
 #define _GNU_SOURCE
 
+#ifndef SEQUENCER_UTIL_HPP
+#define  SEQUENCER_UTIL_HPP
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,6 +23,8 @@
 #define SCALAR_DRAW_VALUE 143
 #define SHIFT_DEFAULT_Y 50                  //Default 'y' position of text in image
 #define TEXT_SHIFT 20 
-unsigned long long sequencePeriods;
+
 	
 void *Sequencer(void *threadp)
+
+#endif

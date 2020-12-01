@@ -11,12 +11,12 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <iostream>
-#include <syslog.h>
+#include <sysprintf.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <string>
-#include "sequencerUtil.hpp"
 #include "util.hpp"
+#include "sequencerUtil.hpp"
 using namespace cv;
 using namespace std;
 
@@ -24,15 +24,8 @@ using namespace std;
 //Defined resolution in project, can choose something else but decide not to.
 #define HRES 640
 #define VRES 480
-#define PROJECT_TAG "BG_RT_Final"
 bool USE_PRINTF = true;
 
-
-struct timeval start_time_val;
-
-double getTimeMsec(void);
-void log(string thingToLog, int logLevel);
-void log(string thingToLog);
 
 int main( int argc, char** argv )
 {
@@ -50,7 +43,7 @@ int main( int argc, char** argv )
     cpu_set_t allcpuset;
 	
     if (argc < 2) {
-        printf("Usage: capture -v for printf, -s for syslog");
+        printf("Usage: capture -v for printf, -s for sysprintf");
         return 0;
     }
     else if(argc == 2) {
@@ -65,7 +58,6 @@ int main( int argc, char** argv )
     printf("Starting Sequencer Demo\n");
     gettimeofday(&start_time_val, (struct timezone *)0);
     gettimeofday(&current_time_val, (struct timezone *)0);
-    syslog(LOG_CRIT, "Sequencer @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 
    printf("System has %d processors configured and %d available.\n", get_nprocs_conf(), get_nprocs());
 
@@ -137,7 +129,7 @@ int main( int argc, char** argv )
     rc=pthread_create(&threads[1],               // pointer to thread descriptor
                       &rt_sched_attr[1],         // use specific attributes
                       //(void *)0,               // default attributes
-                      Service_1,                 // thread function entry point
+                      captureFrameServuce,                 // thread function entry point
                       (void *)&(threadParams[1]) // parameters to pass in
                      );
     if(rc < 0)
@@ -201,36 +193,5 @@ int main( int argc, char** argv )
 }
 };
 
-
-double getTimeMsec(void)
-{
-  struct timespec event_ts = {0, 0};
-
-  clock_gettime(CLOCK_MONOTONIC, &event_ts);
-  return ((event_ts.tv_sec)*1000.0) + ((event_ts.tv_nsec)/1000000.0);
-}
-
-void print_scheduler(void)
-{
-   int schedType;
-
-   schedType = sched_getscheduler(getpid());
-
-   switch(schedType)
-   {
-     case SCHED_FIFO:
-           log("Pthread Policy is SCHED_FIFO\n");
-           break;
-     case SCHED_OTHER:
-           log("Pthread Policy is SCHED_OTHER\n");
-       	   break;
-     case SCHED_RR:
-           log("Pthread Policy is SCHED_RR\n");
-           break;
-     default:
-       log("Pthread Policy is UNKNOWN\n");
-   }
-
-}
 
 
