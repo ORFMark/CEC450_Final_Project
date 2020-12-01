@@ -1,20 +1,21 @@
 INCLUDE_DIRS = 
 LIB_DIRS = 
 CC=g++
+DRIVER = capture
 
 CDEFS=
-CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS)
+CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s
 LIBS= -lrt
 CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
 
-HFILES= 
+HFILES= logging.h
 CFILES= 
-CPPFILES= capture.cpp
+CPPFILES= capture.cpp logging.cpp frame_handling.cpp util.cpp
 
 SRCS= ${HFILES} ${CFILES}
 CPPOBJS= ${CPPFILES:.cpp=.o}
 
-all:	capture 
+all:	capture
 
 clean:
 	-rm -f *.o *.d
@@ -23,8 +24,9 @@ clean:
 distclean:
 	-rm -f *.o *.d
 
-capture: capture.o
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $@.o `pkg-config --libs opencv` $(CPPLIBS)
+${DRIVER}: ${OBJS} 
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) `pkg-config --libs opencv` $(CPPLIBS)
+
 
 depend:
 
