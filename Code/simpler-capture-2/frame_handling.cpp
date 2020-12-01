@@ -14,7 +14,7 @@ using namespace cv;
 
 FrameQueue initQueue(int size) {
    FrameQueue theQueue;
-   theQueue.frames = (Frame) malloc(size * sizeof(Frame));
+   theQueue.frames = (Frame*) malloc(size * sizeof(Frame));
    theQueue.nextFrameIndex = 0;
    theQueue.numberOfFrames = 0;
    if(theQueue.frames != NULL) {
@@ -24,6 +24,7 @@ FrameQueue initQueue(int size) {
     }
     return theQueue;
 }
+
 bool isEmpty(FrameQueue* queue) {
    return queue->numberOfFrames == 0;
 }
@@ -49,7 +50,7 @@ Frame dequeue(FrameQueue* queue) {
         }
         queue->nextFrameIndex--;
     }
-    return frame;
+    return *frame;
 }
 
 Frame captureFrame(CvCapture* camToCaptureFrom) {
@@ -58,7 +59,7 @@ Frame captureFrame(CvCapture* camToCaptureFrom) {
 	Frame frame;
 	frame.frame = img;
 	frame.capture_timestamp = time;
-    return frame;
+    return *frame;
 }
 
 
@@ -80,7 +81,7 @@ void writeBackFrameService(FrameQueue* frameQueue) {
         frameNumber++;
     }    
 }
-void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue) {
+void captureFrameService(CvCapture* camToCaptureFrom, FrameQueue* frameQueue) {
     enqueue(frameQueue, captureFrame(camToCaptureFrom));
 }
 

@@ -64,16 +64,6 @@ struct timeval start_time_val;
 void *Sequencer(void *threadp);
 
 void *Service_1(void *threadp);
-void *Service_2(void *threadp);
-void *Service_3(void *threadp);
-
-double getTimeMsec(void);
-void print_scheduler(void);
-
-int fib_s1_a = 0;
-int fib_s1_b = 1;
-
-Mat *pointer_to_shared_image;
 
 
 int main(void)
@@ -137,7 +127,7 @@ int main(void)
 
     printf("rt_max_prio=%d\n", rt_max_prio);
     printf("rt_min_prio=%d\n", rt_min_prio);
-	FrameQueue frameQueue = initQueue();
+	FrameQueue frameQueue = initQueue(256);
 	CvCapture* camera = cvCreateCameraCapture(0);
 
     for(i=0; i < NUM_THREADS; i++)
@@ -155,8 +145,8 @@ int main(void)
       pthread_attr_setschedparam(&rt_sched_attr[i], &rt_param[i]);
 
       threadParams[i].threadIdx=i;
-	  threadParams[i].camera = camera;
-	  threadParams[i].frameQueue = frameQueue;
+      threadParams[i].camera = camera;
+      threadParams[i].frameQueue = &frameQueue;
     }
    
     printf("Service threads will run on %d CPU cores\n", CPU_COUNT(&threadcpu));

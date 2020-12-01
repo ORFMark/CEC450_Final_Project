@@ -20,15 +20,15 @@ typedef struct FRAME_QUEUE {
     int nextFrameIndex;
     int numberOfFrames;
     int maxSize;
-    Frame* frames;
+    Frame** frames;
 } FrameQueue;
 
 typedef struct
 {
     int threadIdx;
     unsigned long long sequencePeriods;
-	CvCapture* camera;
-	FrameQueue* frameQueue;
+    CvCapture* camera;
+    FrameQueue* frameQueue;
 } threadParams_t;
 
 double getTimeMsec(void);

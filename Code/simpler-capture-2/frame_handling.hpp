@@ -16,5 +16,5 @@ Frame captureFrame(CvCapture* camToCaptureFrom);
 void writebackFrame(int frameNum, Frame frame);
 
 void* writeBackFrameService(void* params);
-void* captureFrameServuce(void* params);
+void* captureFrameService(void* params);
 #endif
