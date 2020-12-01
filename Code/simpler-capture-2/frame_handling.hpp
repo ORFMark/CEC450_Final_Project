@@ -18,6 +18,6 @@ bool isEmpty(FrameQueue* queue);
 IplImage* captureFrame(CvCapture* camToCaptureFrom);
 void writebackFrame(int frameNum, IplImage* frame);
 
-void writeBackFrameService(int frameNumber, FrameQueue* frameQueue);
-void captureFrameServuce(CvCapture* camToCaptureFrom, FrameQueue* frameQueue);
+void writeBackFrameService(threadParams_t* prams);
+void captureFrameServuce(threadParams_t* prams);
 #endif
