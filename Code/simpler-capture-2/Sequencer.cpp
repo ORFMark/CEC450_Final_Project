@@ -6,16 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//
-#include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include "util.hpp"
-using namespace std;
-using namespace cv;
-//
-
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
@@ -25,38 +15,31 @@ using namespace cv;
 #include <sys/time.h>
 #include <sys/sysinfo.h>
 #include <errno.h>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include "util.hpp"
+using namespace std;
+using namespace cv;
+//
 
-#define USEC_PER_MSEC (1000)
-#define NANOSEC_PER_SEC (1000000000)
-#define NUM_CPU_CORES (1)
-#define TRUE (1)
-#define FALSE (0)
+
+
+
 
 #define S0_CYCLES 20000000 //runs every 0.02 seconds
 #define S1_CYCLES 5        //runs every (0.02 * 5) seconds (demo service, to be used for an image processing transform); for now just dishes out Fibonacci numbers
 #define S2_CYCLES 10       //runs every (0.02 * 10) seconds (captures frames; passes frame with global pointer to be annotated by S3) 
 #define S3_CYCLES 25       //runs every (0.02 * 25) seconds (annotates frame and saves the image with cv2::imwrite() )
 
-#define SEQUENCER_MAX_CYCLES 1500 // runtime = (0.02 * 1500); 30 seconds of capture, 60 images 
 
-#define NUM_THREADS (3+1)
-
-#define TEXT_SCALE 1
-#define INDEX_MIN 0
-#define SCALAR_DRAW_VALUE 143
-#define SHIFT_DEFAULT_Y 50                  //Default 'y' position of text in image
-#define TEXT_SHIFT 20 
 
 int abortTest=FALSE;
 int abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
 sem_t semS1, semS2, semS3;
 struct timeval start_time_val;
 
-typedef struct
-{
-    int threadIdx;
-    unsigned long long sequencePeriods;
-} threadParams_t;
 
 
 void *Sequencer(void *threadp);
@@ -68,10 +51,7 @@ void *Service_3(void *threadp);
 double getTimeMsec(void);
 void print_scheduler(void);
 
-int fib_s1_a = 0;
-int fib_s1_b = 1;
 
-Mat *pointer_to_shared_image;
 
 
 void *Sequencer(void *threadp)
