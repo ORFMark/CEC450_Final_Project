@@ -14,7 +14,7 @@ using namespace cv;
 
 FrameQueue initQueue(int size) {
    FrameQueue theQueue;
-   theQueue.frames = (Frame*) malloc(size * sizeof(Frame));
+   theQueue.frames = (Frame**) malloc(size * sizeof(*Frame));
    theQueue.nextFrameIndex = 0;
    theQueue.numberOfFrames = 0;
    if(theQueue.frames != NULL) {
@@ -40,7 +40,7 @@ bool enqueue(FrameQueue* queue, Frame* frame) {
 }
 
 Frame dequeue(FrameQueue* queue) {
-    Frame frame = NULL;
+    Frame* frame = NULL;
     if(queue->numberOfFrames < queue->maxSize) {
         if(queue->nextFrameIndex != 0) { 
             frame = queue->frames[--queue->nextFrameIndex];
@@ -55,18 +55,18 @@ Frame dequeue(FrameQueue* queue) {
 
 Frame captureFrame(CvCapture* camToCaptureFrom) {
     IplImage* img = cvQueryFrame(camToCaptureFrom);
-	double time = getTimeMsec();
-	Frame frame;
-	frame.frame = img;
-	frame.capture_timestamp = time;
-    return *frame;
+    double time = getTimeMsec();
+    Frame frame;
+    frame.frame = img;
+    frame.capture_timestamp = time;
+    return frame;
 }
 
 
 void writebackFrame(int frameNum, Frame frame) {
     static Mat img;
-    double msecTime = frame->capture_timestamp;
-    img = cvarrToMat(frame->frame);
+    double msecTime = frame.capture_timestamp;
+    img = cvarrToMat(frame.frame);
     String headerString = "Frame: " + to_string(frameNum) + "   msecTime: " + to_string(msecTime);
     putText(img, headerString, cv::Point2f(100,100), cv::FONT_HERSHEY_PLAIN
         , 2, cv::Scalar(0,0,255,255));

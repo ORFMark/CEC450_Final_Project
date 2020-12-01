@@ -12,7 +12,7 @@
 
 
 typedef struct FRAME {
-	IplImage* image;
+	IplImage* frame;
 	double capture_timestamp;
 } Frame;
 
