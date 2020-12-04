@@ -9,7 +9,8 @@ bool initQueue(FrameQueue *wantedFrameQueue, int size);
 bool enqueue(FrameQueue *queue, Frame frame);
 Frame dequeue(FrameQueue *queue);
 bool isEmpty(FrameQueue *queue);
-
+bool isFull(FrameQueue *queue);
+bool destructQueue(FrameQueue *WantedFrameQueue);
 bool captureFrame(CvCapture *camToCaptureFrom, Frame *wantedFrame);
 void writebackFrame(int frameNum, Frame frame);
 
