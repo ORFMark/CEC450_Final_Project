@@ -94,7 +94,7 @@ bool enqueue(FrameQueue *WantedQueue, Frame *WantedFrame) {
 bool dequeue(FrameQueue *WantedQueue, Frame *DequeuedFrame) {
 
 	if (WantedQueue->numberOfFrames > 0) {
-		DequeuedFrame = queue->frames[WantedQueue->starterIndex];
+		DequeuedFrame = WantedQueue->frames[WantedQueue->starterIndex];
 		//(queue->frames[WantedQueue->starterIndex]) = NULL;
 		++(WantedQueue->starterIndex);
 		--(WantedQueue->numberOfFrames);
@@ -118,9 +118,9 @@ bool dequeue(FrameQueue *WantedQueue, Frame *DequeuedFrame) {
 
 //
 void captureFrame(CvCapture *camToCaptureFrom, Frame *FramePlacement) {
-	FramePlacement.frame = cvQueryFrame(camToCaptureFrom);
-	FramePlacement.capture_timestamp = getTimeMsec(
-			FramePlacement.capture_timestamp_int);
+	FramePlacement->frame = cvQueryFrame(camToCaptureFrom);
+	FramePlacement->capture_timestamp = getTimeMsec(
+			FramePlacement->capture_timestamp_int);
 
 	/*
 	 IplImage* img = cvQueryFrame(camToCaptureFrom);

@@ -142,7 +142,7 @@ int main(void) {
 	// Initialize the global frame queue
 	if (initQueue(&frameQueue, 256) == false) {
 		destructQueue(&frameQueue);
-		return;
+		return 1;
 	}
 	CvCapture *camera = cvCreateCameraCapture(0);
 
@@ -327,5 +327,5 @@ void* Sequencer(void *threadp) {
 
 // 
 void* Service_1(void *threadp) {
-	return;
+	return NULL;
 }
