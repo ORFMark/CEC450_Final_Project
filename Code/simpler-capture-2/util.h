@@ -6,29 +6,28 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 #include <stdlib.h>
 #include <sys/time.h>
 
-
 typedef struct FRAME {
-	IplImage* frame;
+	IplImage *frame;
 	double capture_timestamp;
 } Frame;
 
 typedef struct FRAME_QUEUE {
-    int nextFrameIndex;
-    int numberOfFrames;
-    int maxSize;
-    Frame** frames;
+	int nextFrameIndex;
+	int starterIndex;
+	int numberOfFrames;
+	int maxSize;
+	Frame **frames;
+	Frame frames_array[];
 } FrameQueue;
 
-typedef struct
-{
-    int threadIdx;
-    unsigned long long sequencePeriods;
-    CvCapture* camera;
-    FrameQueue* frameQueue;
+typedef struct {
+	int threadIdx;
+	unsigned long long sequencePeriods;
+	CvCapture *camera;
+	FrameQueue *frameQueue;
 } threadParams_t;
 
 double getTimeMsec(void);
