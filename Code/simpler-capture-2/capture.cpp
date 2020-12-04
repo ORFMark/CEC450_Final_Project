@@ -27,8 +27,8 @@
 
 
 // Local includes section
-#include "util.h"
-#include "frame_handling.h"
+#include "util.hpp"
+#include "frame_handling.hpp"
 
 
 // Resolution defines section
@@ -70,7 +70,7 @@ using namespace cv;
 
 
 // Global variables section
-int8 abortTest=FALSE, abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
+int8_t abortTest=FALSE, abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
 sem_t semS1, semS2, semS3;
 struct timeval start_time_val;
 FrameQueue frameQueue;
