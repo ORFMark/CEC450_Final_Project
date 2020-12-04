@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-
+#include <pthread.h>
 
 // Local include section
-#include "util.hpp"
+#include "util.h"
 #include "logging.h"
 
 
@@ -17,7 +17,7 @@ struct timespec event_ts = {0, 0};
 
 
 // Function for returning the clock time 
-double getTimeMsec(uint64 * WantedNanosecondsElapsed) {
+double getTimeMsec(u_int64_t WantedNanosecondsElapsed) {
   clock_gettime(CLOCK_MONOTONIC, &event_ts);
   WantedNanosecondsElapsed = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
   printf("%lu - %f", WantedNanosecondsElapsed, ((event_ts.tv_sec * 1000.0) + (event_ts.tv_nsec * (1.0 / 1000000.0))));
