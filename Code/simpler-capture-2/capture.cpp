@@ -27,8 +27,8 @@
 
 
 // Local includes section
-#include "util.hpp"
-#include "frame_handling.hpp"
+#include "util.h"
+#include "frame_handling.h"
 
 
 // Resolution defines section

@@ -8,11 +8,11 @@
 
 
 // External variables section
-//extern bool USE_PRINTF;
+bool USE_PRINTF;
 
 
 // Functions for logging specific information
 void log(char * thingToLog, int logLevel);
 void log(char * thingToLog);
-
+void setPrintf(bool usePrintf) { USE_PRINTF = usePrintf;}
 #endif // LOGGING_BG
