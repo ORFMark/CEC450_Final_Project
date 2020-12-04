@@ -1,73 +1,88 @@
+
+// What is the point of this section?
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
-#define HRES 640
-#define VRES 480
 
+// Global includes section
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//
 #include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-
-using namespace std;
-using namespace cv;
-//
-
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
 #include <semaphore.h>
-
 #include <syslog.h>
 #include <sys/time.h>
 #include <sys/sysinfo.h>
 #include <errno.h>
 
-#include "util.hpp"
-#include "frame_handling.hpp"
+
+// OpenCV includes section
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 
+// Local includes section
+#include "util.h"
+#include "frame_handling.h"
+
+
+// Resolution defines section
+#define HRES 640
+#define VRES 480
+
+
+// Time defines section
 #define USEC_PER_MSEC (1000)
 #define NANOSEC_PER_SEC (1000000000)
-#define NUM_CPU_CORES (1)
-#define TRUE (1)
-#define FALSE (0)
 
+
+// Sequencer defines section
+#define SEQUENCER_MAX_CYCLES 1500 // runtime = (0.02 * 1500); 30 seconds of capture, 60 images 
 #define S0_CYCLES 20000000 //runs every 0.02 seconds
 #define S1_CYCLES 5        //runs every (0.02 * 5) seconds (demo service, to be used for an image processing transform); for now just dishes out Fibonacci numbers
 #define S2_CYCLES 10       //runs every (0.02 * 10) seconds (captures frames; passes frame with global pointer to be annotated by S3) 
 #define S3_CYCLES 25       //runs every (0.02 * 25) seconds (annotates frame and saves the image with cv2::imwrite() )
 
-#define SEQUENCER_MAX_CYCLES 1500 // runtime = (0.02 * 1500); 30 seconds of capture, 60 images 
 
+// Hardware defines section
 #define NUM_THREADS (3+1)
+#define NUM_CPU_CORES (1)
 
+
+// Other defines section
 #define TEXT_SCALE 1
 #define INDEX_MIN 0
 #define SCALAR_DRAW_VALUE 143
 #define SHIFT_DEFAULT_Y 50                  //Default 'y' position of text in image
-#define TEXT_SHIFT 20 
+#define TEXT_SHIFT 20
+#define TRUE (1)
+#define FALSE (0)
 
-int abortTest=FALSE;
-int abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
+
+// Namespace includes section
+using namespace std;
+using namespace cv;
+
+
+// Global variables section
+int8 abortTest=FALSE, abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
 sem_t semS1, semS2, semS3;
 struct timeval start_time_val;
+FrameQueue frameQueue;
 
 
+// Forward function declarations section
+void * Sequencer(void * threadp);
+void * Service_1(void * threadp);
 
 
-void *Sequencer(void *threadp);
-
-void *Service_1(void *threadp);
-
-
-int main(void)
-{
+// Main function
+int main(void) {
     struct timeval current_time_val;
     int i, rc, scope;
     cpu_set_t threadcpu;
@@ -125,7 +140,12 @@ int main(void)
 
     printf("rt_max_prio=%d\n", rt_max_prio);
     printf("rt_min_prio=%d\n", rt_min_prio);
-	FrameQueue frameQueue = initQueue(256);
+    
+    // Initialize the global frame queue
+    if (initQueue(&frameQueue, 256) == false) {
+        destructQueue(&frameQueue);
+        return;
+    }
 	CvCapture* camera = cvCreateCameraCapture(0);
 
     for(i=0; i < NUM_THREADS; i++)
@@ -209,21 +229,21 @@ int main(void)
     rc=pthread_create(&threads[0], &rt_sched_attr[0], Sequencer, (void *)&(threadParams[0]));
     if(rc < 0)
         perror("pthread_create for sequencer service 0");
-    else
+     else
         printf("pthread_create successful for sequeencer service 0\n");
 
 
-   for(i=0;i<NUM_THREADS;i++)
-       pthread_join(threads[i], NULL);
+    for(i=0;i<NUM_THREADS;i++) pthread_join(threads[i], NULL);
 
-   printf("\nTEST COMPLETE\n");
+    printf("\nTEST COMPLETE\n");
 
-   return(EXIT_SUCCESS);
+    destructQueue(&frameQueue);
+    return(EXIT_SUCCESS);
 }
 
 
-void *Sequencer(void *threadp)
-{
+// 
+void * Sequencer(void * threadp) {
     struct timeval current_time_val;
     //struct timespec delay_time = {0,33333333}; // delay for 33.33 msec, 30 Hz: original sequencer delay
     struct timespec delay_time = {0,S0_CYCLES}; //delay for 20 msec, 50 Hz
@@ -293,4 +313,10 @@ void *Sequencer(void *threadp)
     abortS1=TRUE; abortS2=TRUE; abortS3=TRUE;
 
     pthread_exit((void *)0);
+}
+
+
+// 
+void * Service_1(void * threadp) {
+    return;
 }
