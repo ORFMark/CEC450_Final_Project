@@ -5,14 +5,16 @@
 #include "util.hpp"
 using namespace cv;
 
-bool initQueue(FrameQueue *wantedFrameQueue, int size);
-bool enqueue(FrameQueue *queue, Frame frame);
-Frame dequeue(FrameQueue *queue);
-bool isEmpty(FrameQueue *queue);
 
-bool captureFrame(CvCapture *camToCaptureFrom, Frame *wantedFrame);
+
+bool initQueue(FrameQueue* wantedFrameQueue, int size);
+bool enqueue(FrameQueue* queue, Frame frame);
+Frame dequeue(FrameQueue* queue);
+bool isEmpty(FrameQueue* queue);
+
+bool captureFrame(CvCapture* camToCaptureFrom, Frame* wantedFrame);
 void writebackFrame(int frameNum, Frame frame);
 
-void* writeBackFrameService(void *params);
-void* captureFrameService(void *params);
+void* writeBackFrameService(void* params);
+void* captureFrameService(void* params);
 #endif
