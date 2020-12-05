@@ -11,7 +11,6 @@
 
 typedef struct FRAME {
 	IplImage *frame;
-	int capture_timestamp_int;
 	double capture_timestamp;
 } Frame;
 

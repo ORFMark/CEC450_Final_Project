@@ -2,6 +2,7 @@
 #include <syslog.h>
 #include <sys/time.h>
 #include <iostream>
+
 // Local include section
 #include "logging.h"
 
