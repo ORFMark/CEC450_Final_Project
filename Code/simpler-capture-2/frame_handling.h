@@ -2,7 +2,7 @@
 #define FRAME_HANDLER
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include "util.h"
+#include "util.hpp"
 using namespace cv;
 
 bool initQueue(FrameQueue *wantedFrameQueue, int size);
