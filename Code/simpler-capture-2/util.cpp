@@ -1,43 +1,37 @@
-
-// Global include section
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
-
-
-// Local include section
-#include "util.h"
+#include "util.hpp"
 #include "logging.h"
+double getTimeMsec(void)
+{
+  struct timespec event_ts = {0, 0};
 
-
-// "Local" global variables as to remove the constant reallocation of cache memory
-struct timespec event_ts = {0, 0};
-//int schedType = -1;
-
-
-// Function for returning the clock time 
-double getTimeMsec(uint64 * WantedNanosecondsElapsed) {
   clock_gettime(CLOCK_MONOTONIC, &event_ts);
-  WantedNanosecondsElapsed = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
-  printf("%lu - %f", WantedNanosecondsElapsed, ((event_ts.tv_sec * 1000.0) + (event_ts.tv_nsec * (1.0 / 1000000.0))));
-  return (event_ts.tv_sec * 1000.0) + (event_ts.tv_nsec * (1.0 / 1000000.0));
+  return ((event_ts.tv_sec)*1000.0) + ((event_ts.tv_nsec)/1000000.0);
 }
 
+void print_scheduler(void)
+{
+   int schedType;
 
-// Function for logging which pthread policy is currently in use
-void print_scheduler(void) {
-   switch(sched_getscheduler(getpid())) {
+   schedType = sched_getscheduler(getpid());
+
+   switch(schedType)
+   {
      case SCHED_FIFO:
-          log("Pthread Policy is SCHED_FIFO\n");
-          break;
+           log("Pthread Policy is SCHED_FIFO\n");
+           break;
      case SCHED_OTHER:
-          log("Pthread Policy is SCHED_OTHER\n");
-          break;
+           log("Pthread Policy is SCHED_OTHER\n");
+       	   break;
      case SCHED_RR:
-          log("Pthread Policy is SCHED_RR\n");
-          break;
+           log("Pthread Policy is SCHED_RR\n");
+           break;
      default:
-          log("Pthread Policy is UNKNOWN\n");
+       log("Pthread Policy is UNKNOWN\n");
    }
+
 }
+
