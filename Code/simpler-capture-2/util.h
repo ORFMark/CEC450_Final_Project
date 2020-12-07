@@ -21,7 +21,7 @@ typedef struct FRAME_QUEUE {
 	int numberOfFrames;
 	int maxSize;
 	Frame **frames;
-	Frame frames_array[];
+	Frame *frames_array;
 } FrameQueue;
 
 typedef struct {

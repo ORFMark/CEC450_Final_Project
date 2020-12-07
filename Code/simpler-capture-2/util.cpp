@@ -15,7 +15,8 @@ struct timespec event_ts = { 0, 0 };
 //int schedType = -1;
 
 // Function for returning the clock time 
-double getTimeMsec(u_int64_t WantedNanosecondsElapsed) {
+double getTimeMsec(void) {
+        unsigned long WantedNanosecondsElapsed = 0;
 	clock_gettime(CLOCK_MONOTONIC, &event_ts);
 	WantedNanosecondsElapsed = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
 	printf("%lu - %f", WantedNanosecondsElapsed,

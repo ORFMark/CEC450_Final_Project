@@ -17,12 +17,12 @@ void log(char *thingToLog) {
 // Function for logging the wanted text at the wanted logging level
 void log(char *thingToLog, int logLevel) {
 	gettimeofday(&tv, (struct timezone*) 0);
-
-	if (USE_PRINTF) {
+/*
+	if (RT_USE_PRINTF) {
 		cout << PROJECT_TAG << ": SEC:USEC; " << tv.tv_sec << ":" << tv.tv_usec
 				<< "; " << thingToLog << endl;
 	}
-
+*/
 	syslog(logLevel, "%s; SEC:USEC; %lu:%lu; %s", PROJECT_TAG, tv.tv_sec,
 			tv.tv_usec, thingToLog);
 }

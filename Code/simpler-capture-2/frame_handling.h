@@ -10,10 +10,10 @@ bool enqueue(FrameQueue *queue, Frame frame);
 Frame dequeue(FrameQueue *queue);
 bool isEmpty(FrameQueue *queue);
 bool isFull(FrameQueue *queue);
-bool destructQueue(FrameQueue *WantedFrameQueue);
-bool captureFrame(CvCapture *camToCaptureFrom, Frame *wantedFrame);
+void destructQueue(FrameQueue *WantedFrameQueue);
+void captureFrame(CvCapture *camToCaptureFrom, Frame *wantedFrame);
 void writebackFrame(int frameNum, Frame frame);
 
-void* writeBackFrameService(void *params);
-void* captureFrameService(void *params);
+void* writeBackFrameService(void *prams);
+void* captureFrameService(void *prams);
 #endif

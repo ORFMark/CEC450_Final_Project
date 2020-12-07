@@ -1,7 +1,8 @@
 // Global include section
 #include <stdlib.h>
 #include <iostream>
-//#include <string>
+//needed because openCV functions excecpt c++ strings
+#include <string>
 #include <sys/time.h>
 
 // OpenCV include section
@@ -45,9 +46,9 @@ bool initQueue(FrameQueue *frameQueueToInit, int size) {
 }
 
 //
-bool destructQueue(FrameQueue *WantedFrameQueue) {
-	free(WantedFrameQueue->frames);
-	free(WantedFrameQueue->frames_array);
+void destructQueue(FrameQueue *WantedFrameQueue) { 
+        free(WantedFrameQueue->frames);
+        free(WantedFrameQueue->frames_array);
 }
 
 // 
@@ -102,25 +103,12 @@ bool dequeue(FrameQueue *WantedQueue, Frame *DequeuedFrame) {
 	}
 	return false;
 
-	/*
-	 Frame* frame = NULL;
-	 if(queue->numberOfFrames < queue->maxSize) {
-	 if(queue->nextFrameIndex != 0) {
-	 frame = queue->frames[--queue->nextFrameIndex];
-	 } else {
-	 frame = queue->frames[queue->maxSize - 1];
-	 queue->nextFrameIndex = queue->maxSize - 1;
-	 }
-	 queue->nextFrameIndex--;
-	 }
-	 return *frame;*/
 }
 
 //
 void captureFrame(CvCapture *camToCaptureFrom, Frame *FramePlacement) {
 	FramePlacement->frame = cvQueryFrame(camToCaptureFrom);
-	FramePlacement->capture_timestamp = getTimeMsec(
-			FramePlacement->capture_timestamp_int);
+	FramePlacement->capture_timestamp = getTimeMsec();
 
 	/*
 	 IplImage* img = cvQueryFrame(camToCaptureFrom);
@@ -132,22 +120,17 @@ void captureFrame(CvCapture *camToCaptureFrom, Frame *FramePlacement) {
 }
 
 // SHOULD NOT BE UTILIZING STRINGS, AS THEY RESULT IN DYNAMIC MEMORY ALLOCATIONS
+//Welp, the function requreires a string, so we are giving it one
 void writebackFrame(int frameNum, Frame *frame) {
 	static Mat img; // Need to get rid of this
 	//double msecTime = frame.capture_timestamp;
-#ifdef NULLPTR_CHECKS
-    if (frame != NULL) {
-    #else
-#warning "Should provide -DNULLPTR_CHECKS while compiling this file to minimize potential errors."
-#endif
+    if (frame != NULL)  {
 	img = cvarrToMat(frame->frame);
-#ifdef NULLPTR_CHECKS
     }
-    #endif
-	/* Why are we adding a string onto the image?
+        double msecTime = getTimeMsec();
 	 String headerString = "Frame: " + to_string(frameNum) + "   msecTime: " + to_string(msecTime);
 	 putText(img, headerString, cv::Point2f(100,100), cv::FONT_HERSHEY_PLAIN
-	 , 2, cv::Scalar(0,0,255,255));*/
+	 , 2, cv::Scalar(0,0,255,255));
 	static char LocalFileName[24] = "frames/frame_******.ppm";
 	snprintf(LocalFileName, 24, "frames/frame_%06d.ppm", frameNum);
 	//String fileName = "frames/frame_" + to_string(frameNum) + ".ppm";
@@ -155,8 +138,9 @@ void writebackFrame(int frameNum, Frame *frame) {
 }
 
 // 
-void writeBackFrameService(FrameQueue *frameQueue) {
+void* writeBackFrameService(void *prams) {
 	static int frameNumber = 0;
+  FrameQueue* frameQueue = (((threadParams_t*) prams)->frameQueue);
 	while (!isEmpty(frameQueue)) {
 		if (dequeue(frameQueue, &localFramePointer) == true) {
 			writebackFrame(frameNumber, &localFramePointer);
@@ -167,7 +151,9 @@ void writeBackFrameService(FrameQueue *frameQueue) {
 }
 
 // 
-void captureFrameService(CvCapture *camToCaptureFrom, FrameQueue *frameQueue) {
+void* captureFrameService(void* prams) {
+  CvCapture *camToCaptureFrom = (((threadParams_t*) prams)->camera);
+	FrameQueue *frameQueue = (((threadParams_t*) prams)->frameQueue);
 	captureFrame(camToCaptureFrom, &localFramePointer);
 	enqueue(frameQueue, &localFramePointer);
 }
