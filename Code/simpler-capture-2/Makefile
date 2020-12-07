@@ -4,7 +4,7 @@ CC=g++
 DRIVER = capture
 
 CDEFS=
-CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s
+CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s -lpthread -lrt
 LIBS= -lrt
 CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
 
