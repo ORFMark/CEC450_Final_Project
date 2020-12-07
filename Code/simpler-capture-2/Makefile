@@ -3,12 +3,12 @@ LIB_DIRS =
 CC=g++
 DRIVER = capture
 
-CDEFS=
-CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s -lpthread -lrt
-LIBS= -lrt
+CDEFS= 
+CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -lpthread -lrt
+LIBS= -lrt -lpthread
 CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
 
-HFILES= logging.h
+HFILES= logging.h frame_handling.h util.h
 CFILES= 
 CPPFILES= capture.cpp logging.cpp frame_handling.cpp util.cpp
 
@@ -25,7 +25,7 @@ distclean:
 	-rm -f *.o *.d
 
 ${DRIVER}: ${OBJS} 
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) `pkg-config --libs opencv` $(CPPLIBS)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) `pkg-config opencv --cflags --libs` $(CPPLIBS)
 
 
 depend:
