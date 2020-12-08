@@ -13,31 +13,37 @@
 
 // "Local" global variables as to remove the constant reallocation of cache memory
 struct timespec event_ts = {0, 0};
-//int schedType = -1;
+static const char StaticLogInfo[4][32] = {
+     "Pthread Policy is SCHED_FIFO\n\0",
+     "Pthread Policy is SCHED_OTHER\n\0",
+     "Pthread Policy is SCHED_RR\n\0",
+     "Pthread Policy is UNKNOWN\n\0"
+};
 
 
-// Function for returning the clock time 
-double getTimeMsec(uint64 * WantedNanosecondsElapsed) {
-  clock_gettime(CLOCK_MONOTONIC, &event_ts);
-  WantedNanosecondsElapsed = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
-  printf("%lu - %f", WantedNanosecondsElapsed, ((event_ts.tv_sec * 1000.0) + (event_ts.tv_nsec * (1.0 / 1000000.0))));
-  return (event_ts.tv_sec * 1000.0) + (event_ts.tv_nsec * (1.0 / 1000000.0));
+// Function for returning the clock time
+//    Direct memory access is faster and more efficient on weaker
+//    hardware, along with integers being faster than floats/doubles
+void getTimeMsec(uint64 * WantedNanosecondsElapsed) {
+     clock_gettime(CLOCK_MONOTONIC, &event_ts);
+     (*WantedNanosecondsElapsed) = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
+     return;
 }
 
 
 // Function for logging which pthread policy is currently in use
 void print_scheduler(void) {
-   switch(sched_getscheduler(getpid())) {
-     case SCHED_FIFO:
-          log("Pthread Policy is SCHED_FIFO\n");
-          break;
-     case SCHED_OTHER:
-          log("Pthread Policy is SCHED_OTHER\n");
-          break;
-     case SCHED_RR:
-          log("Pthread Policy is SCHED_RR\n");
-          break;
-     default:
-          log("Pthread Policy is UNKNOWN\n");
-   }
+     switch(sched_getscheduler(getpid())) {
+          case SCHED_FIFO:
+               log(StaticLogInfo[0]);
+               break;
+          case SCHED_OTHER:
+               log(StaticLogInfo[1]);
+               break;
+          case SCHED_RR:
+               log(StaticLogInfo[2]);
+               break;
+          default:
+               log(StaticLogInfo[3]);
+     }
 }

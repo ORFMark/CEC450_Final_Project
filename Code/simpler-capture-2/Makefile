@@ -5,8 +5,8 @@ DRIVER = capture
 
 CDEFS= 
 CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s
-LIBS= -lrt
-CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
+LIBS= -lrt -lpthread
+CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_imgcodecs -lopencv_video -lpthread -lrt
 
 HFILES= logging.h
 CFILES= 
@@ -25,7 +25,7 @@ distclean:
 	-rm -f *.o *.d
 
 ${DRIVER}: ${OBJS} 
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) `pkg-config opencv --cflags --libs` $(CPPLIBS)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) $(CPPLIBS)
 
 
 depend:

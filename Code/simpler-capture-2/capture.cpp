@@ -21,6 +21,7 @@
 
 
 // OpenCV includes section
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -73,12 +74,15 @@ using namespace cv;
 int8 abortTest=FALSE, abortS1=FALSE, abortS2=FALSE, abortS3=FALSE;
 sem_t semS1, semS2, semS3;
 struct timeval start_time_val;
+cv::VideoCapture * GlobalVideoCamera = NULL;
 FrameQueue frameQueue;
 
 
 // Forward function declarations section
 void * Sequencer(void * threadp);
 void * Service_1(void * threadp);
+void * Service_2(void * threadp);
+void * Service_3(void * threadp);
 
 
 // Main function
@@ -97,8 +101,8 @@ int main(void) {
     cpu_set_t allcpuset;
 
     printf("Starting Sequencer Demo\n");
-    gettimeofday(&start_time_val, (struct timezone *)0);
-    gettimeofday(&current_time_val, (struct timezone *)0);
+    gettimeofday(&start_time_val, (struct timezone *)NULL);
+    gettimeofday(&current_time_val, (struct timezone *)NULL);
     syslog(LOG_CRIT, "Sequencer @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
 
    printf("System has %d processors configured and %d available.\n", get_nprocs_conf(), get_nprocs());
@@ -125,7 +129,11 @@ int main(void) {
     rc=sched_getparam(mainpid, &main_param);
     main_param.sched_priority=rt_max_prio;
     rc=sched_setscheduler(getpid(), SCHED_FIFO, &main_param);
-    if(rc < 0) perror("main_param");
+    if(rc < 0) {
+        perror("main_param");
+        printf("\nERROR: Program requires sudo priviledges\n");
+        return 0;
+    }
     print_scheduler();
 
 
@@ -140,13 +148,19 @@ int main(void) {
 
     printf("rt_max_prio=%d\n", rt_max_prio);
     printf("rt_min_prio=%d\n", rt_min_prio);
+    // I randomly get a segmentation fault right here, without the program ever getting past the previous line
     
     // Initialize the global frame queue
     if (initQueue(&frameQueue, 256) == false) {
         destructQueue(&frameQueue);
-        return;
+        printf("ERROR: Failed to initialize global frame queue (capture.cpp at line 154)");
+        return (EXIT_FAILURE);
     }
-	CvCapture* camera = cvCreateCameraCapture(0);
+    printf("1");
+    
+    GlobalVideoCamera = (cv::VideoCapture*)malloc(sizeof(cv::VideoCapture));
+    GlobalVideoCamera->open(0);
+	//GlobalCamera = cvCreateCameraCapture(0);
 
     for(i=0; i < NUM_THREADS; i++)
     {
@@ -163,8 +177,8 @@ int main(void) {
       pthread_attr_setschedparam(&rt_sched_attr[i], &rt_param[i]);
 
       threadParams[i].threadIdx=i;
-      threadParams[i].camera = camera;
-      threadParams[i].frameQueue = &frameQueue;
+      //threadParams[i].camera = GlobalCamera;
+      //threadParams[i].frameQueue = &frameQueue;
     }
    
     printf("Service threads will run on %d CPU cores\n", CPU_COUNT(&threadcpu));
@@ -178,7 +192,7 @@ int main(void) {
     rc=pthread_create(&threads[1],               // pointer to thread descriptor
                       &rt_sched_attr[1],         // use specific attributes
                       //(void *)0,               // default attributes
-                      Service_1,                 // thread function entry point
+                      &Service_1,                 // thread function entry point
                       (void *)&(threadParams[1]) // parameters to pass in
                      );
     if(rc < 0)
@@ -191,7 +205,7 @@ int main(void) {
     //
     rt_param[2].sched_priority=rt_max_prio-2;
     pthread_attr_setschedparam(&rt_sched_attr[2], &rt_param[2]);
-    rc=pthread_create(&threads[2], &rt_sched_attr[2], captureFrameService, (void *)&(threadParams[2]));
+    rc=pthread_create(&threads[2], &rt_sched_attr[2], &Service_2, (void *)&(threadParams[2]));
     if(rc < 0)
         perror("pthread_create for service 2");
     else
@@ -202,7 +216,7 @@ int main(void) {
     //
     rt_param[3].sched_priority=rt_max_prio-3;
     pthread_attr_setschedparam(&rt_sched_attr[3], &rt_param[3]);
-    rc=pthread_create(&threads[3], &rt_sched_attr[3], writeBackFrameService, (void *)&(threadParams[3]));
+    rc=pthread_create(&threads[3], &rt_sched_attr[3], &Service_3, (void *)&(threadParams[3]));
     if(rc < 0)
         perror("pthread_create for service 3");
     else
@@ -226,7 +240,7 @@ int main(void) {
     //
     rt_param[0].sched_priority=rt_max_prio;
     pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
-    rc=pthread_create(&threads[0], &rt_sched_attr[0], Sequencer, (void *)&(threadParams[0]));
+    rc=pthread_create(&threads[0], &rt_sched_attr[0], &Sequencer, (void *)&(threadParams[0]));
     if(rc < 0)
         perror("pthread_create for sequencer service 0");
      else
@@ -238,7 +252,8 @@ int main(void) {
     printf("\nTEST COMPLETE\n");
 
     destructQueue(&frameQueue);
-    return(EXIT_SUCCESS);
+    delete GlobalVideoCamera;
+    return (EXIT_SUCCESS);
 }
 
 
@@ -250,8 +265,8 @@ void * Sequencer(void * threadp) {
     struct timespec remaining_time;
     double current_time;
     double residual;
-    int rc, delay_cnt=0;
-    unsigned long long seqCnt=0;
+    int32 rc, delay_cnt = 0;
+    uint64 seqCnt = 0;
     threadParams_t *threadParams = (threadParams_t *)threadp;
 
     gettimeofday(&current_time_val, (struct timezone *)0);
@@ -318,5 +333,22 @@ void * Sequencer(void * threadp) {
 
 // 
 void * Service_1(void * threadp) {
-    return;
+    printf("Service 1 Start");
+    return NULL;
+}
+
+
+// 
+void * Service_2(void * threadp) {
+    printf("Service 2 Start");
+    //captureFrameService(GlobalVideoCamera, GlobalCamera, &frameQueue);
+    return NULL;
+}
+
+
+// 
+void * Service_3(void * threadp) {
+    printf("Service 3 Start");
+    //writeBackFrameService(&frameQueue);
+    return NULL;
 }

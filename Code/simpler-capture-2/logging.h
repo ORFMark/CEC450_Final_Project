@@ -11,8 +11,8 @@
 //extern bool USE_PRINTF;
 
 
-// Functions for logging specific information
-void log(char * thingToLog, int logLevel);
-void log(char * thingToLog);
+// Functions for logging specific information - inlined for performance
+void log(const char * thingToLog, int logLevel);
+void log(const char * thingToLog);
 
 #endif // LOGGING_BG
