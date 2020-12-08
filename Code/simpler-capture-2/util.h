@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 #ifndef UTIL_C
 #define UTIL_C
@@ -6,17 +5,11 @@
 
 // OpenCV include section
 #include <opencv2/opencv.hpp>
-=======
-#ifndef UTIL_C
-#define UTIL_C
-
->>>>>>> 33a0cad75190ecd462740fece63a11cbae4682bf
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-<<<<<<< HEAD
 
 // Global include section
 #include <stdlib.h>
@@ -65,33 +58,3 @@ void getTimeMsec(uint64 * WantedNanosecondsElapsed);
 void print_scheduler(void);
 
 #endif // UTIL_C
-=======
-#include <stdlib.h>
-#include <sys/time.h>
-
-typedef struct FRAME {
-	IplImage *frame;
-	int capture_timestamp_int;
-	double capture_timestamp;
-} Frame;
-
-typedef struct FRAME_QUEUE {
-	int nextFrameIndex;
-	int starterIndex;
-	int numberOfFrames;
-	int maxSize;
-	Frame **frames;
-	Frame *frames_array;
-} FrameQueue;
-
-typedef struct {
-	int threadIdx;
-	unsigned long long sequencePeriods;
-	CvCapture *camera;
-	FrameQueue *frameQueue;
-} threadParams_t;
-
-double getTimeMsec(void);
-void print_scheduler(void);
-#endif
->>>>>>> 33a0cad75190ecd462740fece63a11cbae4682bf

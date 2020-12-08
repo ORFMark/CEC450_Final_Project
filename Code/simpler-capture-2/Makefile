@@ -4,17 +4,11 @@ CC=g++
 DRIVER = capture
 
 CDEFS= 
-<<<<<<< HEAD
 CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -s
 LIBS= -lrt -lpthread
 CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_imgcodecs -lopencv_video -lpthread -lrt
-=======
-CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -lpthread -lrt
-LIBS= -lrt -lpthread
-CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
->>>>>>> 33a0cad75190ecd462740fece63a11cbae4682bf
 
-HFILES= logging.h frame_handling.h util.h
+HFILES= logging.h
 CFILES= 
 CPPFILES= capture.cpp logging.cpp frame_handling.cpp util.cpp
 
