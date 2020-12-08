@@ -1,0 +1,11 @@
+
+OpenCV Installation:
+	sudo apt-get install libopencv-dev opencv-doc --fix-missing
+
+Should be as simple as running 'make' and then 'sudo ./capture'
+
+If you wish to utilize the printing of information, then you need to utilize 'make -f WithPrintf', as that will print error information at runtime, something that should be removed in the final build, hence the two separate makefiles
+
+If wanting to recompile at any point, simply run 'make -B'
+
+-- Sidney Towers
