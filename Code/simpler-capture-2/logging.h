@@ -8,5 +8,4 @@
 // Functions for logging specific information
 void log(char *thingToLog, int logLevel);
 void log(char *thingToLog);
-void setLoggingType(bool usePrintf);
 #endif // LOGGING_BG

@@ -1,94 +1,112 @@
-// What is the point of this section?
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 
-// Global includes section
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <iostream>
+
 #include <pthread.h>
 #include <sched.h>
 #include <time.h>
 #include <semaphore.h>
+
 #include <syslog.h>
 #include <sys/time.h>
 #include <sys/sysinfo.h>
 #include <errno.h>
 
-// OpenCV includes section
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <signal.h>
 
-// Local includes section
+#include "logging.h"
 #include "util.h"
 #include "frame_handling.h"
 
-// Resolution defines section
-#define HRES 640
-#define VRES 480
-
-// Time defines section
 #define USEC_PER_MSEC (1000)
+#define NANOSEC_PER_MSEC (1000000)
 #define NANOSEC_PER_SEC (1000000000)
-
-// Sequencer defines section
-#define SEQUENCER_MAX_CYCLES 1500 // runtime = (0.02 * 1500); 30 seconds of capture, 60 images 
-#define S0_CYCLES 20000000 //runs every 0.02 seconds
-#define S1_CYCLES 5        //runs every (0.02 * 5) seconds (demo service, to be used for an image processing transform); for now just dishes out Fibonacci numbers
-#define S2_CYCLES 10       //runs every (0.02 * 10) seconds (captures frames; passes frame with global pointer to be annotated by S3) 
-#define S3_CYCLES 25       //runs every (0.02 * 25) seconds (annotates frame and saves the image with cv2::imwrite() )
-
-// Hardware defines section
-#define NUM_THREADS (3+1)
-#define NUM_CPU_CORES (1)
-
-// Other defines section
-#define TEXT_SCALE 1
-#define INDEX_MIN 0
-#define SCALAR_DRAW_VALUE 143
-#define SHIFT_DEFAULT_Y 50                  //Default 'y' position of text in image
-#define TEXT_SHIFT 20
+#define NUM_CPU_CORES (4)
 #define TRUE (1)
 #define FALSE (0)
 
-// Namespace includes section
-using namespace std;
-using namespace cv;
+#define NUM_THREADS (3)
 
-// Global variables section
-int8_t abortTest = FALSE, abortS1 = FALSE, abortS2 = FALSE, abortS3 = FALSE;
+#define MY_CLOCK_TYPE CLOCK_MONOTONIC_RAW
+
+int abortTest = FALSE;
+int abortS1 = FALSE, abortS2 = FALSE, abortS3 = FALSE;
 sem_t semS1, semS2, semS3;
-struct timeval start_time_val;
-FrameQueue frameQueue;
+struct timespec start_time_val;
+double start_realtime;
+unsigned long long sequencePeriods;
 
-// Forward function declarations section
-void* Sequencer(void *threadp);
-void* Service_1(void *threadp);
+static timer_t timer_1;
+static struct itimerspec itime = { { 1, 0 }, { 1, 0 } };
+static struct itimerspec last_itime;
 
-// Main function
-int main(void) {
-	struct timeval current_time_val;
-	int i, rc, scope;
+static unsigned long long seqCnt = 0;
+
+
+void Sequencer(int id);
+
+void* writeBackServiceHandler(void *threadp);
+void* captureServiceHandler(void *threadp);
+void* houghServiceHandler(void *threadp);
+
+double realtime(struct timespec *tsptr);
+
+static inline unsigned long long tsc_read(void) {
+	unsigned int lo, hi;
+
+	// RDTSC copies contents of 64-bit TSC into EDX:EAX
+	asm volatile("rdtsc" : "=a" (lo), "=d" (hi));
+	return (unsigned long long) hi << 32 | lo;
+}
+
+// not able to read unless enabled by kernel module
+static inline unsigned ccnt_read(void) {
+	unsigned cc;
+	asm volatile ("mrc p15, 0, %0, c15, c12, 1" : "=r" (cc));
+	return cc;
+}
+
+void main(void) {
+	struct timespec current_time_val, current_time_res;
+	double current_realtime, current_realtime_res;
+	FrameQueue queue;
+	CvCapture* camera = cvCreateCameraCapture(0);
+	initQueue(&queue, 256);
+	int i, rc, scope, flags = 0;
+
 	cpu_set_t threadcpu;
+	cpu_set_t allcpuset;
+
 	pthread_t threads[NUM_THREADS];
 	threadParams_t threadParams[NUM_THREADS];
 	pthread_attr_t rt_sched_attr[NUM_THREADS];
-	int rt_max_prio, rt_min_prio;
+	int rt_max_prio, rt_min_prio, cpuidx;
+
 	struct sched_param rt_param[NUM_THREADS];
 	struct sched_param main_param;
+
 	pthread_attr_t main_attr;
 	pid_t mainpid;
-	cpu_set_t allcpuset;
 
-	printf("Starting Sequencer Demo\n");
-	gettimeofday(&start_time_val, (struct timezone*) 0);
-	gettimeofday(&current_time_val, (struct timezone*) 0);
-	syslog(LOG_CRIT, "Sequencer @ sec=%d, msec=%d\n",
-			(int) (current_time_val.tv_sec - start_time_val.tv_sec),
-			(int) current_time_val.tv_usec / USEC_PER_MSEC);
+	printf("Starting High Rate Sequencer Demo\n");
+	clock_gettime(MY_CLOCK_TYPE, &start_time_val);
+	start_realtime = realtime(&start_time_val);
+	clock_gettime(MY_CLOCK_TYPE, &current_time_val);
+	current_realtime = realtime(&current_time_val);
+	clock_getres(MY_CLOCK_TYPE, &current_time_res);
+	current_realtime_res = realtime(&current_time_res);
+	printf("START High Rate Sequencer @ sec=%6.9lf with resolution %6.9lf\n",
+			(current_realtime - start_realtime), current_realtime_res);
+	syslog(LOG_CRIT,
+			"START High Rate Sequencer @ sec=%6.9lf with resolution %6.9lf\n",
+			(current_realtime - start_realtime), current_realtime_res);
+
+	//timestamp = ccnt_read();
+	//printf("timestamp=%u\n", timestamp);
 
 	printf("System has %d processors configured and %d available.\n",
 			get_nprocs_conf(), get_nprocs());
@@ -139,68 +157,76 @@ int main(void) {
 	printf("rt_max_prio=%d\n", rt_max_prio);
 	printf("rt_min_prio=%d\n", rt_min_prio);
 
-	// Initialize the global frame queue
-	if (initQueue(&frameQueue, 256) == false) {
-		destructQueue(&frameQueue);
-		return 1;
-	}
-	CvCapture *camera = cvCreateCameraCapture(0);
+
 
 	for (i = 0; i < NUM_THREADS; i++) {
 
-		CPU_ZERO(&threadcpu);
-		CPU_SET(3, &threadcpu);
+		// run even indexed threads on core 2
+		if (i % 2 == 0) {
+			CPU_ZERO(&threadcpu);
+			cpuidx = (2);
+			CPU_SET(cpuidx, &threadcpu);
+		}
+
+		// run odd indexed threads on core 3
+		else {
+			CPU_ZERO(&threadcpu);
+			cpuidx = (3);
+			CPU_SET(cpuidx, &threadcpu);
+		}
 
 		rc = pthread_attr_init(&rt_sched_attr[i]);
 		rc = pthread_attr_setinheritsched(&rt_sched_attr[i],
 				PTHREAD_EXPLICIT_SCHED);
 		rc = pthread_attr_setschedpolicy(&rt_sched_attr[i], SCHED_FIFO);
-		//rc=pthread_attr_setaffinity_np(&rt_sched_attr[i], sizeof(cpu_set_t), &threadcpu);
+		rc = pthread_attr_setaffinity_np(&rt_sched_attr[i], sizeof(cpu_set_t),
+				&threadcpu);
 
 		rt_param[i].sched_priority = rt_max_prio - i;
 		pthread_attr_setschedparam(&rt_sched_attr[i], &rt_param[i]);
 
 		threadParams[i].threadIdx = i;
 		threadParams[i].camera = camera;
-		threadParams[i].frameQueue = &frameQueue;
+		threadParams[i].frameQueue = &queue;
 	}
 
 	printf("Service threads will run on %d CPU cores\n", CPU_COUNT(&threadcpu));
 
 	// Create Service threads which will block awaiting release for:
 	//
-	// Servcie_1 = RT_MAX-1	@ 3 Hz
+
+	// Servcie_1 = RT_MAX-1	@ 50 Hz
 	//
-	rt_param[1].sched_priority = rt_max_prio - 1;
-	pthread_attr_setschedparam(&rt_sched_attr[1], &rt_param[1]);
-	rc = pthread_create(&threads[1],             // pointer to thread descriptor
-			&rt_sched_attr[1],         // use specific attributes
+	rt_param[0].sched_priority = rt_max_prio - 1;
+	pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
+	rc = pthread_create(&threads[0],             // pointer to thread descriptor
+			&rt_sched_attr[0],         // use specific attributes
 			//(void *)0,               // default attributes
-			Service_1,                 // thread function entry point
-			(void*) &(threadParams[1]) // parameters to pass in
+			writeBackServiceHandler,              // thread function entry point
+			(void*) &(threadParams[0]) // parameters to pass in
 			);
 	if (rc < 0)
 		perror("pthread_create for service 1");
 	else
 		printf("pthread_create successful for service 1\n");
 
-	// Service_2 = RT_MAX-2	@ 1 Hz
+	// Service_2 = RT_MAX-2	@ 20 Hz
 	//
-	rt_param[2].sched_priority = rt_max_prio - 2;
-	pthread_attr_setschedparam(&rt_sched_attr[2], &rt_param[2]);
-	rc = pthread_create(&threads[2], &rt_sched_attr[2], captureFrameService,
-			(void*) &(threadParams[2]));
+	rt_param[1].sched_priority = rt_max_prio - 2;
+	pthread_attr_setschedparam(&rt_sched_attr[1], &rt_param[1]);
+	rc = pthread_create(&threads[1], &rt_sched_attr[1], captureServiceHandler,
+			(void*) &(threadParams[1]));
 	if (rc < 0)
 		perror("pthread_create for service 2");
 	else
 		printf("pthread_create successful for service 2\n");
 
-	// Service_3 = RT_MAX-3	@ 0.5 Hz
+	// Service_3 = RT_MAX-3	@ 10 Hz
 	//
-	rt_param[3].sched_priority = rt_max_prio - 3;
-	pthread_attr_setschedparam(&rt_sched_attr[3], &rt_param[3]);
-	rc = pthread_create(&threads[3], &rt_sched_attr[3], writeBackFrameService,
-			(void*) &(threadParams[3]));
+	rt_param[2].sched_priority = rt_max_prio - 3;
+	pthread_attr_setschedparam(&rt_sched_attr[2], &rt_param[2]);
+	rc = pthread_create(&threads[2], &rt_sched_attr[2], houghServiceHandler,
+			(void*) &(threadParams[2]));
 	if (rc < 0)
 		perror("pthread_create for service 3");
 	else
@@ -208,124 +234,168 @@ int main(void) {
 
 	// Wait for service threads to initialize and await relese by sequencer.
 	//
-	// Note that the sleep is not necessary of RT service threads are created wtih
+	// Note that the sleep is not necessary of RT service threads are created with
 	// correct POSIX SCHED_FIFO priorities compared to non-RT priority of this main
 	// program.
 	//
-	usleep(100000);
+	// sleep(1);
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
-	//threadParams[0].sequencePeriods=900;
-	threadParams[0].sequencePeriods = SEQUENCER_MAX_CYCLES; //30 seconds of time: 1500 iterations measured at 0.02 seconds per iteration. With image capturing running approximately 2 times per second, this captures 60 images.
+	sequencePeriods = 2000;
 
-	// Sequencer = RT_MAX	@ 30 Hz
+	// Sequencer = RT_MAX	@ 100 Hz
 	//
-	rt_param[0].sched_priority = rt_max_prio;
-	pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
-	rc = pthread_create(&threads[0], &rt_sched_attr[0], Sequencer,
-			(void*) &(threadParams[0]));
-	if (rc < 0)
-		perror("pthread_create for sequencer service 0");
-	else
-		printf("pthread_create successful for sequeencer service 0\n");
+	/* set up to signal SIGALRM if timer expires */
+	timer_create(CLOCK_REALTIME, NULL, &timer_1);
 
-	for (i = 0; i < NUM_THREADS; i++)
-		pthread_join(threads[i], NULL);
+	signal(SIGALRM, (void (*)()) Sequencer);
+
+	/* arm the interval timer */
+	itime.it_interval.tv_sec = 0;
+	itime.it_interval.tv_nsec = 10000000;
+	itime.it_value.tv_sec = 0;
+	itime.it_value.tv_nsec = 10000000;
+	//itime.it_interval.tv_sec = 1;
+	//itime.it_interval.tv_nsec = 0;
+	//itime.it_value.tv_sec = 1;
+	//itime.it_value.tv_nsec = 0;
+
+	timer_settime(timer_1, flags, &itime, &last_itime);
+
+	for (i = 0; i < NUM_THREADS; i++) {
+		if (rc = pthread_join(threads[i], NULL) < 0)
+			perror("main pthread_join");
+		else
+			printf("joined thread %d\n", i);
+	}
 
 	printf("\nTEST COMPLETE\n");
-
-	destructQueue(&frameQueue);
-	return (EXIT_SUCCESS);
 }
 
-// 
-void* Sequencer(void *threadp) {
-	struct timeval current_time_val;
-	//struct timespec delay_time = {0,33333333}; // delay for 33.33 msec, 30 Hz: original sequencer delay
-	struct timespec delay_time = { 0, S0_CYCLES }; //delay for 20 msec, 50 Hz
-	struct timespec remaining_time;
-	double current_time;
-	double residual;
-	int rc, delay_cnt = 0;
-	unsigned long long seqCnt = 0;
+void Sequencer(int id) {
+	struct timespec current_time_val;
+	double current_realtime;
+	int rc, flags = 0;
+
+	// received interval timer signal
+
+	seqCnt++;
+
+	//clock_gettime(MY_CLOCK_TYPE, &current_time_val); current_realtime=realtime(&current_time_val);
+	//printf("Sequencer on core %d for cycle %llu @ sec=%6.9lf\n", sched_getcpu(), seqCnt, current_realtime-start_realtime);
+	//syslog(LOG_CRIT, "Sequencer on core %d for cycle %llu @ sec=%6.9lf\n", sched_getcpu(), seqCnt, current_realtime-start_realtime);
+
+	// Release each service at a sub-rate of the generic sequencer rate
+
+	// Servcie_1 = RT_MAX-1	@ 1 Hz @ 500MS
+	if ((seqCnt % 100) == 50)
+		sem_post(&semS1);
+
+	// Service_2 = RT_MAX-2	@ 1 Hz @ 0MS
+	if ((seqCnt % 100) == 0)
+		sem_post(&semS2);
+
+	// Service_3 = RT_MAX-3	@ 1 Hz @500MS
+	if ((seqCnt % 100) ==)
+		sem_post(&semS3);
+
+	if (abortTest || (seqCnt >= sequencePeriods)) {
+		// disable interval timer
+		itime.it_interval.tv_sec = 0;
+		itime.it_interval.tv_nsec = 0;
+		itime.it_value.tv_sec = 0;
+		itime.it_value.tv_nsec = 0;
+		timer_settime(timer_1, flags, &itime, &last_itime);
+		printf(
+				"Disabling sequencer interval timer with abort=%d and %llu of %lld\n",
+				abortTest, seqCnt, sequencePeriods);
+
+		// shutdown all services
+		sem_post(&semS1);
+		sem_post(&semS2);
+		sem_post(&semS3);
+
+		abortS1 = TRUE;
+		abortS2 = TRUE;
+		abortS3 = TRUE;
+	}
+
+}
+
+void* writeBackServiceHandler(void *threadp) {
+	struct timespec current_time_val;
+	double current_realtime;
+	unsigned long long S1Cnt = 0;
 	threadParams_t *threadParams = (threadParams_t*) threadp;
 
-	gettimeofday(&current_time_val, (struct timezone*) 0);
-	syslog(LOG_CRIT, "Sequencer thread @ sec=%d, msec=%d\n",
-			(int) (current_time_val.tv_sec - start_time_val.tv_sec),
-			(int) current_time_val.tv_usec / USEC_PER_MSEC);
-	printf("Sequencer thread @ sec=%d, msec=%d\n",
-			(int) (current_time_val.tv_sec - start_time_val.tv_sec),
-			(int) current_time_val.tv_usec / USEC_PER_MSEC);
+	// Start up processing and resource initialization
+	clock_gettime(MY_CLOCK_TYPE, &current_time_val);
+	current_realtime = realtime(&current_time_val);
+	syslog(LOG_CRIT, "S1 thread @ sec=%6.9lf\n",
+			current_realtime - start_realtime);
+	printf("S1 thread @ sec=%6.9lf\n", current_realtime - start_realtime);
 
-	do {
-		delay_cnt = 0;
-		residual = 0.0;
+	while (!abortS1) // check for synchronous abort request
+	{
+		// wait for service request from the sequencer, a signal handler or ISR in kernel
+		sem_wait(&semS1);
 
-		//gettimeofday(&current_time_val, (struct timezone *)0);
-		//syslog(LOG_CRIT, "Sequencer thread prior to delay @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
-		do {
-			rc = nanosleep(&delay_time, &remaining_time);
+		S1Cnt++;
+		log("Firing Writeback Service");
+		writeBackFrameService(threadp);
 
-			if (rc == EINTR) {
-				residual = remaining_time.tv_sec
-						+ ((double) remaining_time.tv_nsec
-								/ (double) NANOSEC_PER_SEC);
+	}
 
-				if (residual > 0.0)
-					printf("residual=%lf, sec=%d, nsec=%d\n", residual,
-							(int) remaining_time.tv_sec,
-							(int) remaining_time.tv_nsec);
+	// Resource shutdown here
+	//
+	pthread_exit((void*) 0);
+}
 
-				delay_cnt++;
-			} else if (rc < 0) {
-				perror("Sequencer nanosleep");
-				exit(-1);
-			}
+void* captureServiceHandler(void *threadp) {
+	struct timespec current_time_val;
+	double current_realtime;
+	unsigned long long S2Cnt = 0;
+	threadParams_t *threadParams = (threadParams_t*) threadp;
 
-		} while ((residual > 0.0) && (delay_cnt < 100));
+	clock_gettime(MY_CLOCK_TYPE, &current_time_val);
+	current_realtime = realtime(&current_time_val);
+	syslog(LOG_CRIT, "S2 thread @ sec=%6.9lf\n",
+			current_realtime - start_realtime);
+	printf("S2 thread @ sec=%6.9lf\n", current_realtime - start_realtime);
 
-		seqCnt++;
-		gettimeofday(&current_time_val, (struct timezone*) 0);
-		syslog(LOG_CRIT, "Sequencer cycle %llu @ sec=%d, msec=%d\n", seqCnt,
-				(int) (current_time_val.tv_sec - start_time_val.tv_sec),
-				(int) current_time_val.tv_usec / USEC_PER_MSEC);
-
-		if (delay_cnt > 1)
-			printf("Sequencer looping delay %d\n", delay_cnt);
-
-		// Release each service at a sub-rate of the generic sequencer rate
-
-		// Servcie_1 = RT_MAX-1	@ 3 Hz: original example sequencer runtime for S1
-		if ((seqCnt % S1_CYCLES) == 0)
-			sem_post(&semS1); //originally 10
-
-		// Service_2 = RT_MAX-2	@ 1 Hz: original example sequencer runtime for S2
-		if ((seqCnt % S2_CYCLES) == 0)
-			sem_post(&semS2); //originally 25
-
-		// Service_3 = RT_MAX-3	@ 0.5 Hz: original example sequencer runtime for S3
-		if ((seqCnt % S3_CYCLES) == 0)
-			sem_post(&semS3); //originally 50
-
-		//gettimeofday(&current_time_val, (struct timezone *)0);
-		//syslog(LOG_CRIT, "Sequencer release all sub-services @ sec=%d, msec=%d\n", (int)(current_time_val.tv_sec-start_time_val.tv_sec), (int)current_time_val.tv_usec/USEC_PER_MSEC);
-
-	} while (!abortTest && (seqCnt < threadParams->sequencePeriods));
-
-	sem_post(&semS1);
-	sem_post(&semS2);
-	sem_post(&semS3);
-
-	abortS1 = TRUE;
-	abortS2 = TRUE;
-	abortS3 = TRUE;
+	while (!abortS2) {
+		sem_wait(&semS2);
+		S2Cnt++;
+		log("firing frame capture service");
+		captureFrameService(threadp);
+	}
 
 	pthread_exit((void*) 0);
 }
 
-// 
-void* Service_1(void *threadp) {
-	return NULL;
+void* houghServiceHandler(void *threadp) {
+	struct timespec current_time_val;
+	double current_realtime;
+	unsigned long long S3Cnt = 0;
+	threadParams_t *threadParams = (threadParams_t*) threadp;
+
+	clock_gettime(MY_CLOCK_TYPE, &current_time_val);
+	current_realtime = realtime(&current_time_val);
+	syslog(LOG_CRIT, "S3 thread @ sec=%6.9lf\n",
+			current_realtime - start_realtime);
+	printf("S3 thread @ sec=%6.9lf\n", current_realtime - start_realtime);
+
+	while (!abortS3) {
+		sem_wait(&semS3);
+		S3Cnt++;
+		log("Firing hough service");
+	}
+
+	pthread_exit((void*) 0);
+}
+
+double realtime(struct timespec *tsptr) {
+	return ((double) (tsptr->tv_sec)
+			+ (((double) tsptr->tv_nsec) / 1000000000.0));
 }
