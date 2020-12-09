@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+#define NUMBER_OF_ITERATIONS 1800
+
 typedef struct FRAME {
 	IplImage *frame;
 	int capture_timestamp_int;

@@ -46,9 +46,9 @@ bool initQueue(FrameQueue *frameQueueToInit, int size) {
 }
 
 //
-void destructQueue(FrameQueue *WantedFrameQueue) { 
-        free(WantedFrameQueue->frames);
-        free(WantedFrameQueue->frames_array);
+void destructQueue(FrameQueue *WantedFrameQueue) {
+	free(WantedFrameQueue->frames);
+	free(WantedFrameQueue->frames_array);
 }
 
 // 
@@ -124,13 +124,14 @@ void captureFrame(CvCapture *camToCaptureFrom, Frame *FramePlacement) {
 void writebackFrame(int frameNum, Frame *frame) {
 	static Mat img; // Need to get rid of this
 	//double msecTime = frame.capture_timestamp;
-    if (frame != NULL)  {
-	img = cvarrToMat(frame->frame);
-    }
-        double msecTime = getTimeMsec();
-	 String headerString = "Frame: " + to_string(frameNum) + "   msecTime: " + to_string(msecTime);
-	 putText(img, headerString, cv::Point2f(100,100), cv::FONT_HERSHEY_PLAIN
-	 , 2, cv::Scalar(0,0,255,255));
+	if (frame != NULL) {
+		img = cvarrToMat(frame->frame);
+	}
+	double msecTime = getTimeMsec();
+	String headerString = "Frame: " + to_string(frameNum) + "   msecTime: "
+			+ to_string(msecTime);
+	putText(img, headerString, cv::Point2f(100, 100), cv::FONT_HERSHEY_PLAIN, 2,
+			cv::Scalar(0, 0, 255, 255));
 	static char LocalFileName[24] = "frames/frame_******.ppm";
 	snprintf(LocalFileName, 24, "frames/frame_%06d.ppm", frameNum);
 	//String fileName = "frames/frame_" + to_string(frameNum) + ".ppm";
@@ -140,7 +141,7 @@ void writebackFrame(int frameNum, Frame *frame) {
 // 
 void* writeBackFrameService(void *prams) {
 	static int frameNumber = 0;
-  FrameQueue* frameQueue = (((threadParams_t*) prams)->frameQueue);
+	FrameQueue *frameQueue = (((threadParams_t*) prams)->frameQueue);
 	while (!isEmpty(frameQueue)) {
 		if (dequeue(frameQueue, &localFramePointer) == true) {
 			writebackFrame(frameNumber, &localFramePointer);
@@ -151,8 +152,8 @@ void* writeBackFrameService(void *prams) {
 }
 
 // 
-void* captureFrameService(void* prams) {
-  CvCapture *camToCaptureFrom = (((threadParams_t*) prams)->camera);
+void* captureFrameService(void *prams) {
+	CvCapture *camToCaptureFrom = (((threadParams_t*) prams)->camera);
 	FrameQueue *frameQueue = (((threadParams_t*) prams)->frameQueue);
 	captureFrame(camToCaptureFrom, &localFramePointer);
 	enqueue(frameQueue, &localFramePointer);
