@@ -26,7 +26,7 @@ using namespace cv;
 Frame localFramePointer;
 uint64 LocalFrameCounter = 0;
 char LocalFileName[24] = "frames/frame_******.ppm";
-char LocalScreenText[38] = "Frame: ******; msecTime: ************";
+char LocalScreenText[44] = "Frame: ******; msecTime: ************";
 Mat LocalImage;
 uint64 LocalFileTime;
 
@@ -109,8 +109,8 @@ void captureFrame(CvCapture * camToCaptureFrom, Frame * FramePlacement) {
 void writebackFrame(Frame * WantedFrame) {
     LocalImage = cvarrToMat(&WantedFrame->frame);
     getTimeMsec(&LocalFileTime);
-    snprintf(LocalScreenText, 24, "Frame: %06d; msecTime: %012d", LocalFrameCounter, LocalFileTime);
-    snprintf(LocalFileName, 24, "frames/frame_%06d.ppm", LocalFrameCounter);
+    snprintf(LocalScreenText, 44, "Frame: %06lu; msecTime: %014lu", LocalFrameCounter, LocalFileTime);
+    snprintf(LocalFileName, 24, "frames/frame_%06lu.ppm", LocalFrameCounter);
     putText(LocalImage, LocalScreenText, cv::Point2f(100, 100), cv::FONT_HERSHEY_PLAIN, 2,
 			cv::Scalar(0, 0, 255, 255));
     cv::imwrite(LocalFileName, LocalImage);
