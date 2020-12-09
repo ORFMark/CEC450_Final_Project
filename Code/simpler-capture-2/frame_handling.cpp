@@ -128,7 +128,7 @@ void writeBackFrameService(FrameQueue * WantedFrameQueue) {
 
 // 
 void captureFrameService(CvCapture * camToCaptureFrom, FrameQueue * WantedFrameQueue) {
-    captureFrame(CameraToCaptureFrom, &localFramePointer);
+    captureFrame(camToCaptureFrom, &localFramePointer);
 #ifdef USE_PRINTF
     if (enqueue(WantedFrameQueue, &localFramePointer) == false) {
         std::cout << std::endl << "ERROR: Failed to queue frame captured at " <<

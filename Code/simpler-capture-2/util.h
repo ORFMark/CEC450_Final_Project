@@ -24,11 +24,11 @@
 typedef unsigned char uint8;	   // 1 byte  [0 .. 255]
 typedef unsigned short uint16;	   // 2 bytes [0 .. 255]
 typedef unsigned long uint32;	   // 4 bytes [0 .. 255]
-typedef unsigned long long uint64; // 8 bytes [0 .. 255]
-typedef signed char int8;	   // 1 byte  [-127 .. 128]
-typedef signed short int16;	   // 2 bytes [0 .. 255]
-typedef signed long int32;	   // 4 bytes [0 .. 255]
-typedef signed long long int64;	   // 8 bytes [0 .. 255]
+//typedef unsigned long long uint64; // 8 bytes [0 .. 255]
+typedef signed char int8;	 	   // 1 byte  [-127 .. 128]
+typedef signed short int16;	 	   // 2 bytes [0 .. 255]
+typedef signed long int32;		   // 4 bytes [0 .. 255]
+//typedef signed long long int64;	   // 8 bytes [0 .. 255]
 
 
 // Struct for all information regarding a single frame
@@ -52,7 +52,6 @@ typedef struct FRAME_QUEUE {
 typedef struct THREAD_PARAMS {
 	int32 threadIdx;
 	uint64 sequencePeriods;
-	uint32 CurrentQueueIndex;
 	CvCapture * camera;
 	FrameQueue * frameQueue;
 } threadParams_t; // 16 bytes (18 bytes?)

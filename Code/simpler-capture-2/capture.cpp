@@ -349,7 +349,7 @@ void* writeBackServiceHandler(void *threadp) {
 		sem_wait(&semS1);
 
 		S1Cnt++;
-		log("Firing Writeback Service");
+		log((char *)"Firing Writeback Service");
 		writeBackFrameService(threadParams->frameQueue);
 
 	}
@@ -374,7 +374,7 @@ void* captureServiceHandler(void *threadp) {
 	while (!abortS2) {
 		sem_wait(&semS2);
 		S2Cnt++;
-		log("firing frame capture service");
+		log((char *)"firing frame capture service");
 		captureFrameService(threadParams->camera, threadParams->frameQueue);
 	}
 
@@ -396,7 +396,7 @@ void* houghServiceHandler(void *threadp) {
 	while (!abortS3) {
 		sem_wait(&semS3);
 		S3Cnt++;
-		log("Firing hough service");
+		log((char *)"Firing hough service");
 	}
 
 	pthread_exit((void*) 0);
