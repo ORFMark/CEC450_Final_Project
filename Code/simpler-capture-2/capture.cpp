@@ -174,14 +174,14 @@ int main(void) {
 
 	for (i = 0; i < NUM_THREADS; i++) {
 
-		// run even indexed threads on core 2
-		if (i % 2 == 0) {
+		// run rt threads on core 2
+		if (i != 2) {
 			CPU_ZERO(&threadcpu);
 			cpuidx = (2);
 			CPU_SET(cpuidx, &threadcpu);
 		}
 
-		// run odd indexed threads on core 3
+		// run best effort hough threads on core 3
 		else {
 			CPU_ZERO(&threadcpu);
 			cpuidx = (3);
