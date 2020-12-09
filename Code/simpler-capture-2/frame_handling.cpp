@@ -134,6 +134,7 @@ void writebackFrame(int frameNum, Frame *frame) {
 	static char LocalFileName[24] = "frames/frame_******.ppm";
 	snprintf(LocalFileName, 24, "frames/frame_%06d.ppm", frameNum);
 	//String fileName = "frames/frame_" + to_string(frameNum) + ".ppm";
+        printf("DEBUG: %s\n",LocalFileName);
 	imwrite(LocalFileName/*fileName.c_str()*/, img);
 }
 
@@ -156,4 +157,5 @@ void* captureFrameService(void* prams) {
 	FrameQueue *frameQueue = (((threadParams_t*) prams)->frameQueue);
 	captureFrame(camToCaptureFrom, &localFramePointer);
 	enqueue(frameQueue, &localFramePointer);
+  printf("DEBUG: ENTERED CAPTURE FRAME SERVICE\n");
 }

@@ -5,8 +5,8 @@ DRIVER = capture
 
 CDEFS= 
 CFLAGS= -O0 -g $(INCLUDE_DIRS) $(CDEFS) -lpthread -lrt
-LIBS= -lrt -lpthread
-CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
+LIBS= -lrt
+CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video -lpthread -lrt
 
 HFILES= logging.h frame_handling.h util.h
 CFILES= 
