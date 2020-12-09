@@ -16,7 +16,7 @@
 
 
 // Global defines section
-#define NUMBER_OF_ITERATIONS 1800
+#define NUMBER_OF_ITERATIONS 10
 
 
 // Simple type definitions for optimizing memory usage - This is

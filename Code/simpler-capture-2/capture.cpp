@@ -250,7 +250,7 @@ int main(void) {
 	// correct POSIX SCHED_FIFO priorities compared to non-RT priority of this main
 	// program.
 	//
-	sleep(10);
+	sleep(1000);
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
