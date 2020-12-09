@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "frame_handling.h"
-#include "timing.h";
-#include "util.h";
+#include "timing.h"
+#include "util.h"
 
 #define INTERATIONS 100
 
@@ -15,21 +15,21 @@ int main(void) {
 	initQueue(&queue, 256);
 	threadParams_t prams;
 	prams.camera = camera;
-	prams.frameQueue = &frameQueue;
+	prams.frameQueue = &queue;
 	double startTime = getTimeMsec();
 	int i = 0;
 	for(i = 0; i < INTERATIONS; i++) {
-		addStartTime(timeArray[i]);
+		addStartTime(&timeArray[i]);
 		captureFrameService((void*) &prams);
-		addEndTime(timeArray[i]);
+		addEndTime(&timeArray[i]);
 	}
 	writeArrayOfTimeStructs(timeArray, "captureTest.txt",
 			startTime, INTERATIONS);
 	startTime = getTimeMsec();
 	for(i = 0; i < INTERATIONS; i++) {
-			addStartTime(timeArray[i]);
+			addStartTime(&timeArray[i]);
 			writeBackFrameService((void*) &prams);
-			addEndTime(timeArray[i]);
+			addEndTime(&timeArray[i]);
 		}
 	writeArrayOfTimeStructs(timeArray, "writebackTimingTest.txt",
 				startTime, INTERATIONS);
