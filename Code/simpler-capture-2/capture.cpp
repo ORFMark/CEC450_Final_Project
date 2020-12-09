@@ -350,7 +350,7 @@ void* writeBackServiceHandler(void *threadp) {
 
 		S1Cnt++;
 		log("Firing Writeback Service");
-		writeBackFrameService(threadp);
+		writeBackFrameService(threadParams->frameQueue);
 
 	}
 
@@ -375,7 +375,7 @@ void* captureServiceHandler(void *threadp) {
 		sem_wait(&semS2);
 		S2Cnt++;
 		log("firing frame capture service");
-		captureFrameService(threadp);
+		captureFrameService(threadParams->camera, threadParams->frameQueue);
 	}
 
 	pthread_exit((void*) 0);
