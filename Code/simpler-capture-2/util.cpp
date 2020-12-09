@@ -28,7 +28,7 @@ static const char StaticLogInfo[4][32] = {
 //    hardware, along with integers being faster than floats/doubles
 void getTimeMsec(uint64 * WantedNanosecondsElapsed) {
      clock_gettime(CLOCK_MONOTONIC, &event_ts);
-     (*WantedNanosecondsElapsed) = ((event_ts.tv_sec * 1000) + event_ts.tv_nsec);
+     (*WantedNanosecondsElapsed) = ((event_ts.tv_sec * 1000) + (event_ts.tv_nsec / 1000000));
 }
 
 
