@@ -203,6 +203,8 @@ int main(void) {
 
 	// Servcie_1 = RT_MAX-1	@ 50 Hz
 	//
+
+
 	rt_param[0].sched_priority = rt_max_prio - 1;
 	pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
 	rc = pthread_create(&threads[0],             // pointer to thread descriptor
@@ -244,7 +246,7 @@ int main(void) {
 	// correct POSIX SCHED_FIFO priorities compared to non-RT priority of this main
 	// program.
 	//
-	// sleep(1);
+	sleep(10);
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
@@ -349,8 +351,8 @@ void* writeBackServiceHandler(void *threadp) {
 		sem_wait(&semS1);
 
 		S1Cnt++;
-		log("Firing Writeback Service");
-		writeBackFrameService(threadp);
+		log((char *)"Firing Writeback Service");
+		writeBackFrameService(threadParams->frameQueue);
 
 	}
 
@@ -374,8 +376,8 @@ void* captureServiceHandler(void *threadp) {
 	while (!abortS2) {
 		sem_wait(&semS2);
 		S2Cnt++;
-		log("firing frame capture service");
-		captureFrameService(threadp);
+		log((char *)"firing frame capture service");
+		captureFrameService(threadParams->camera, threadParams->frameQueue);
 	}
 
 	pthread_exit((void*) 0);
@@ -396,7 +398,7 @@ void* houghServiceHandler(void *threadp) {
 	while (!abortS3) {
 		sem_wait(&semS3);
 		S3Cnt++;
-		log("Firing hough service");
+		log((char *)"Firing hough service");
 	}
 
 	pthread_exit((void*) 0);
