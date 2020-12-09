@@ -10,23 +10,26 @@ CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video -lrt -lpthread
 
 HFILES= logging.h frame_handling.h util.h timing.h
 CFILES= 
-CPPFILES= capture.cpp logging.cpp frame_handling.cpp util.cpp timing.cpp
+CPPFILES=  logging.cpp frame_handling.cpp util.cpp timing.cpp
 
 SRCS= ${HFILES} ${CFILES}
 CPPOBJS= ${CPPFILES:.cpp=.o}
 
-all:	capture
+all:	capture time
 
 clean:
 	-rm -f *.o *.d
 	-rm -f capture
+	-rm -r time
 
 distclean:
 	-rm -f *.o *.d
 
 ${DRIVER}: ${OBJS} 
-	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ $(CPPFILES) $(OBJS) `pkg-config opencv --cflags --libs` $(CPPLIBS)
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ capture.cpp $(CPPFILES) $(OBJS) `pkg-config opencv --cflags --libs` $(CPPLIBS)
 
+time: ${OBJS} 
+	$(CC) $(LDFLAGS) $(CFLAGS) -o $@ timingTest.cpp $(CPPFILES) $(OBJS) `pkg-config opencv --cflags --libs` $(CPPLIBS)
 
 depend:
 

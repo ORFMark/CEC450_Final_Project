@@ -4,30 +4,30 @@
 
 #include "timing.h"
 #include "util.h"
-void addStartTime(timeStruct * structToAddTo) {
+void addStartTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		getTimeMsec(&structToAddTo->start_time);
+		structToAddTo->start_time = getTimeMsec();
 	}
 }
-void addEndTime(timeStruct * structToAddTo) {
+void addEndTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		getTimeMsec(&structToAddTo->end_time);
+		structToAddTo->end_time = getTimeMsec();
 	}
 }
 
-void setIterNumber(timeStruct * structToModify, int32 iterNumber) {
+void setIterNumber(timeStruct *structToModify, int iterNumber) {
 	if (structToModify != NULL) {
 		structToModify->start_time = iterNumber;
 	}
 }
 void writeArrayOfTimeStructs(timeStruct array[], char *label,
-		uint64 startTimeMsec, uint32 arrayLength) {
+		double startTimeMsec, int arrayLength) {
 	int i = 0;
 
 	FILE *f = fopen(label, "w");
 
 	for (i = 0; i < arrayLength; i++) {
-		fprintf(f, "%l:%lu:%lu", array[i].iterNumber,
+		fprintf(f, "%d:%lf:%lf\n", i,
 				array[i].start_time - startTimeMsec,
 				array[i].end_time - startTimeMsec);
 	}
