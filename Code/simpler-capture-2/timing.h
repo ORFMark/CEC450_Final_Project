@@ -5,6 +5,11 @@
 #include <sys/time.h>
 #include <stdlib.h>
 
+typedef struct START_END {
+	double start_time;
+	double end_time;
+	int iterNumber;
+} timeStruct;
 
 void addStartTime(timeStruct *structToAddTo);
 void addEndTime(timeStruct *structToAddTo);
