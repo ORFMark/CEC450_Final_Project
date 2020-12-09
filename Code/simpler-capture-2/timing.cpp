@@ -27,7 +27,7 @@ void writeArrayOfTimeStructs(timeStruct array[], char *label,
 	FILE *f = fopen(label, "w");
 
 	for (i = 0; i < arrayLength; i++) {
-		fprintf(f, "%d:%lf:%lf", array[i].iterNumber,
+		fprintf(f, "%d:%lu:%lu", array[i].iterNumber,
 				array[i].start_time - startTimeMsec,
 				array[i].end_time - startTimeMsec);
 	}

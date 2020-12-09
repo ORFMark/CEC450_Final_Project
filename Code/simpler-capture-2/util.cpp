@@ -36,15 +36,15 @@ void getTimeMsec(uint64 * WantedNanosecondsElapsed) {
 void print_scheduler(void) {
      switch(sched_getscheduler(getpid())) {
           case SCHED_FIFO:
-               log(StaticLogInfo[0]);
+               log(&StaticLogInfo[0]);
                break;
           case SCHED_OTHER:
-               log(StaticLogInfo[1]);
+               log(&StaticLogInfo[1]);
                break;
           case SCHED_RR:
-               log(StaticLogInfo[2]);
+               log(&StaticLogInfo[2]);
                break;
           default:
-               log(StaticLogInfo[3]);
+               log(&StaticLogInfo[3]);
      }
 }
