@@ -109,11 +109,15 @@ void captureFrame(CvCapture * camToCaptureFrom, Frame * FramePlacement) {
 void writebackFrame(Frame * WantedFrame) {
     LocalImage = cvarrToMat(&WantedFrame->frame);
     getTimeMsec(&LocalFileTime);
-    snprintf(LocalScreenText, 44, "Frame: %06lu; msecTime: %014lu", LocalFrameCounter, LocalFileTime);
-    snprintf(LocalFileName, 24, "frames/frame_%06lu.ppm", LocalFrameCounter);
-    putText(LocalImage, LocalScreenText, cv::Point2f(20, 20), cv::FONT_HERSHEY_PLAIN, 1,
-			cv::Scalar(0, 0, 255, 255));
-    cv::imwrite(LocalFileName, LocalImage);
+
+    if(LocalFrameCounter >= 10) {
+        snprintf(LocalScreenText, 44, "Frame: %06lu; msecTime: %014lu", LocalFrameCounter - 10, LocalFileTime);
+        snprintf(LocalFileName, 24, "frames/frame_%06lu.ppm", LocalFrameCounter = 10);
+        putText(LocalImage, LocalScreenText, cv::Point2f(20, 20), cv::FONT_HERSHEY_PLAIN, 1,
+    			cv::Scalar(0, 0, 255, 255));
+    	cv::imwrite(LocalFileName, LocalImage);
+    }
+
     ++LocalFrameCounter;
 }
 
