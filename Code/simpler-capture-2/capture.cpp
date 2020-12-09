@@ -27,6 +27,7 @@
 #include "logging.h"
 #include "util.h"
 #include "frame_handling.h"
+#include "timing.h"
 
 #define USEC_PER_MSEC (1000)
 #define NANOSEC_PER_MSEC (1000000)
@@ -45,6 +46,9 @@ sem_t semS1, semS2, semS3;
 struct timespec start_time_val;
 double start_realtime;
 unsigned long long sequencePeriods;
+timeStruct captureTimeStamps[NUMBER_OF_ITERATIONS];
+timeStruct writeTimeStamps[NUMBER_OF_ITERATIONS];
+
 
 static timer_t timer_1;
 static struct itimerspec itime = { { 1, 0 }, { 1, 0 } };
@@ -250,7 +254,7 @@ int main(void) {
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
-	sequencePeriods = 2000;
+	sequencePeriods = 100*NUMBER_OF_ITERATIONS;
 
 	// Sequencer = RT_MAX	@ 100 Hz
 	//
@@ -352,7 +356,9 @@ void* writeBackServiceHandler(void *threadp) {
 
 		S1Cnt++;
 		log((char *)"Firing Writeback Service");
-		writeBackFrameService(threadParams->frameQueue);
+		addStartTime(&writeTimeStamps[S1Cnt-1]);
+		writeBackFrameService(threadp);
+		addEndTime(&writeTimeStamps[S1Cnt-1]);
 
 	}
 
@@ -377,7 +383,9 @@ void* captureServiceHandler(void *threadp) {
 		sem_wait(&semS2);
 		S2Cnt++;
 		log((char *)"firing frame capture service");
-		captureFrameService(threadParams->camera, threadParams->frameQueue);
+		addStartTime(&captureTimeStamps[S2Cnt-1]);
+		captureFrameService(threadp);
+		addEndTime(&captureTimeStamps[S2Cnt-1]);
 	}
 
 	pthread_exit((void*) 0);
