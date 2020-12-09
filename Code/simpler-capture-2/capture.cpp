@@ -203,6 +203,8 @@ int main(void) {
 
 	// Servcie_1 = RT_MAX-1	@ 50 Hz
 	//
+
+
 	rt_param[0].sched_priority = rt_max_prio - 1;
 	pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
 	rc = pthread_create(&threads[0],             // pointer to thread descriptor
@@ -244,7 +246,7 @@ int main(void) {
 	// correct POSIX SCHED_FIFO priorities compared to non-RT priority of this main
 	// program.
 	//
-	// sleep(1);
+	sleep(10);
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
