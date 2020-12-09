@@ -100,7 +100,7 @@ bool dequeue(FrameQueue * WantedQueue, Frame * DequeuedFrame) {
 
 //
 void captureFrame(CvCapture * camToCaptureFrom, Frame * FramePlacement) {
-	FramePlacement->frame = *cvQueryFrame(camToCaptureFrom);
+	&FramePlacement->frame = cvQueryFrame(camToCaptureFrom);
 	getTimeMsec(&FramePlacement->CaptureTimestamp);
 }
 
