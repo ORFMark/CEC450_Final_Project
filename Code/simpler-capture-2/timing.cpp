@@ -6,12 +6,12 @@
 #include "util.h"
 void addStartTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		getTimeMsec(structToAddTo->start_tim);
+		getTimeMsec(&structToAddTo->start_tim);
 	}
 }
 void addEndTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		getTimeMsec(structToAddTo->end_time );
+		getTimeMsec(&structToAddTo->end_time );
 	}
 }
 
