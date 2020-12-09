@@ -32,7 +32,7 @@ uint64 LocalFileTime;
 
 
 // 
-bool initQueue(FrameQueue * WantedFrameQueue, int WantedSize) {
+bool initQueue(FrameQueue * WantedFrameQueue, uint32 WantedSize) {
     WantedFrameQueue->ArrayOfFrames = (Frame *)malloc(WantedSize * sizeof(Frame));
     WantedFrameQueue->nextFrameIndex = 0;
     WantedFrameQueue->numberOfFrames = 0;
