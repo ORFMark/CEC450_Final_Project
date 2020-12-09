@@ -1,4 +1,8 @@
 #include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "timing.h"
 
 void addStartTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
