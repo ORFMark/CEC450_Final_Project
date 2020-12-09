@@ -27,6 +27,7 @@
 #include "logging.h"
 #include "util.h"
 #include "frame_handling.h"
+#include "timing.h"
 
 #define USEC_PER_MSEC (1000)
 #define NANOSEC_PER_MSEC (1000000)
@@ -38,6 +39,8 @@
 #define NUM_THREADS (3)
 
 #define MY_CLOCK_TYPE CLOCK_MONOTONIC_RAW
+
+#define FRAMES_TO_CAPTURE 6
 
 int abortTest = FALSE;
 int abortS1 = FALSE, abortS2 = FALSE, abortS3 = FALSE;
@@ -70,11 +73,15 @@ static inline unsigned long long tsc_read(void) {
 }
 
 // not able to read unless enabled by kernel module
+
+timeStruct captureTimeStamps[FRAMES_TO_CAPTURE];
+timeStruct writeTimeStamps[FRAMES_TO_CAPTURE];
 static inline unsigned ccnt_read(void) {
 	unsigned cc;
 	asm volatile ("mrc p15, 0, %0, c15, c12, 1" : "=r" (cc));
 	return cc;
 }
+
 
 int main(void) {
 	struct timespec current_time_val, current_time_res;
@@ -247,8 +254,9 @@ int main(void) {
 	// sleep(1);
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
+	double startTime = getTimeMsec();
 	printf("Start sequencer\n");
-	sequencePeriods = 2000;
+	sequencePeriods = FRAMES_TO_CAPTURE * 100; //180,000
 
 	// Sequencer = RT_MAX	@ 100 Hz
 	//
@@ -277,6 +285,10 @@ int main(void) {
 	}
 
 	printf("\nTEST COMPLETE\n");
+	writeArrayOfTimeStructs(captureTimeStamps, "capture.txt",
+			startTime, FRAMES_TO_CAPTURE);
+	writeArrayOfTimeStructs(writeTimeStamps, "writeback.txt",
+				startTime, FRAMES_TO_CAPTURE);
 }
 
 void Sequencer(int id) {
@@ -350,8 +362,9 @@ void* writeBackServiceHandler(void *threadp) {
 
 		S1Cnt++;
 		log("Firing Writeback Service");
+		addStartTime(&writeTimeStamps[S1Cnt-1]);
 		writeBackFrameService(threadp);
-
+		addEndTime(&writeTimeStamps[S1Cnt-1]);
 	}
 
 	// Resource shutdown here
@@ -375,7 +388,9 @@ void* captureServiceHandler(void *threadp) {
 		sem_wait(&semS2);
 		S2Cnt++;
 		log("firing frame capture service");
+		addStartTime(&captureTimeStamps[S2Cnt-1]);
 		captureFrameService(threadp);
+		addEndTime(&captureTimeStamps[S2Cnt-1]);
 	}
 
 	pthread_exit((void*) 0);
