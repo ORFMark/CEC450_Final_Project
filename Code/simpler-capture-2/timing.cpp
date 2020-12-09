@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "timing.h"
-
+#include "util.h"
 void addStartTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
 		structToAddTo->start_time = getTimeMsec();

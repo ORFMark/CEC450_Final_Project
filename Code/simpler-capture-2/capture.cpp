@@ -255,7 +255,7 @@ int main(void) {
 	/* set up to signal SIGALRM if timer expires */
 	timer_create(CLOCK_REALTIME, NULL, &timer_1);
 
-	signal(SIGALRM, (void (*)()) Sequencer);
+	signal(SIGALRM, Sequencer);
 
 	/* arm the interval timer */
 	itime.it_interval.tv_sec = 0;
