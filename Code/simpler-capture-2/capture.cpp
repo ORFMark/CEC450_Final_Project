@@ -18,6 +18,12 @@
 
 #include <signal.h>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+
 #include "logging.h"
 #include "util.h"
 #include "frame_handling.h"
@@ -70,7 +76,7 @@ static inline unsigned ccnt_read(void) {
 	return cc;
 }
 
-void main(void) {
+int main(void) {
 	struct timespec current_time_val, current_time_res;
 	double current_realtime, current_realtime_res;
 	FrameQueue queue;
@@ -289,16 +295,17 @@ void Sequencer(int id) {
 	// Release each service at a sub-rate of the generic sequencer rate
 
 	// Servcie_1 = RT_MAX-1	@ 1 Hz @ 500MS
-	if ((seqCnt % 100) == 50)
+	if ((seqCnt % 100) == 50) {
 		sem_post(&semS1);
-
+	}
 	// Service_2 = RT_MAX-2	@ 1 Hz @ 0MS
-	if ((seqCnt % 100) == 0)
+	if ((seqCnt % 100) == 0) {
 		sem_post(&semS2);
-
+	}
 	// Service_3 = RT_MAX-3	@ 1 Hz @500MS
-	if ((seqCnt % 100) ==)
+	if ((seqCnt % 100) == 50) {
 		sem_post(&semS3);
+	}
 
 	if (abortTest || (seqCnt >= sequencePeriods)) {
 		// disable interval timer

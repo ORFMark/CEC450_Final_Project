@@ -5,7 +5,6 @@
 #include <sys/time.h>
 #include <stdlib.h>
 
-#include "timing.h"
 
 void addStartTime(timeStruct *structToAddTo);
 void addEndTime(timeStruct *structToAddTo);
