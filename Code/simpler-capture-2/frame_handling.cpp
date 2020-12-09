@@ -111,7 +111,7 @@ void writebackFrame(Frame * WantedFrame) {
     getTimeMsec(&LocalFileTime);
     snprintf(LocalScreenText, 44, "Frame: %06lu; msecTime: %014lu", LocalFrameCounter, LocalFileTime);
     snprintf(LocalFileName, 24, "frames/frame_%06lu.ppm", LocalFrameCounter);
-    putText(LocalImage, LocalScreenText, cv::Point2f(2, 2), cv::FONT_HERSHEY_PLAIN, 1,
+    putText(LocalImage, LocalScreenText, cv::Point2f(20, 20), cv::FONT_HERSHEY_PLAIN, 1,
 			cv::Scalar(0, 0, 255, 255));
     cv::imwrite(LocalFileName, LocalImage);
     ++LocalFrameCounter;
