@@ -31,7 +31,7 @@ void writebackFrame(Frame * WantedFrame);
 
 
 // Functions for handling frame service specific functionality
-void writeBackFrameService(FrameQueue * WantedFrameQueue);
-void captureFrameService(CvCapture * camToCaptureFrom, FrameQueue * WantedFrameQueue);
+void writeBackFrameService(void* params);
+void captureFrameService(void* params);
 
 #endif // FRAME_HANDLER
