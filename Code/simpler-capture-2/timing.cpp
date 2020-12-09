@@ -6,18 +6,18 @@
 #include "util.h"
 void addStartTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		structToAddTo->start_time = getTimeMsec();
+		getTimeMsec(structToAddTo->start_tim);
 	}
 }
 void addEndTime(timeStruct *structToAddTo) {
 	if (structToAddTo != NULL) {
-		structToAddTo->end_time = getTimeMsec();
+		getTimeMsec(structToAddTo->end_time );
 	}
 }
 
 void setIterNumber(timeStruct *structToModify, int iterNumber) {
 	if (structToModify != NULL) {
-		structToModify->start_time = iterNumber;
+		structToModify->iterNumber = iterNumber;
 	}
 }
 void writeArrayOfTimeStructs(timeStruct array[], char *label,

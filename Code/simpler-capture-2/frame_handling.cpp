@@ -135,8 +135,8 @@ void writebackFrame(Frame *WantedFrame) {
 // 
 void writeBackFrameService(void *params) {
 	FrameQueue *frameQueue = (((threadParams_t*) params)->frameQueue);
-	while (!isEmpty(WantedFrameQueue)) {
-		if (dequeue(WantedFrameQueue, &localFramePointer) == true) {
+	while (!isEmpty(frameQueue)) {
+		if (dequeue(frameQueue, &localFramePointer) == true) {
 			writebackFrame(&localFramePointer);
 		}
 	}
@@ -144,16 +144,17 @@ void writeBackFrameService(void *params) {
 
 // 
 void captureFrameService(void *params) {
-	captureFrame(camToCaptureFrom, &localFramePointer);
 	CvCapture *camToCaptureFrom = (((threadParams_t*) params)->camera);
-	FrameQueue *frameQueue = (((threadParams_t*) params)->frameQueue);
+		FrameQueue *frameQueue = (((threadParams_t*) params)->frameQueue);
+	captureFrame(camToCaptureFrom, &localFramePointer);
+
 #ifdef USE_PRINTF
-    if (enqueue(WantedFrameQueue, &localFramePointer) == false) {
+    if (enqueue(frameQueue, &localFramePointer) == false) {
         std::cout << std::endl << "ERROR: Failed to queue frame captured at " <<
             localFramePointer.CaptureTimestamp << std::endl <<
             "nsecs\tReason: queue is full" << std::endl;
     }
 #else
-	enqueue(WantedFrameQueue, &localFramePointer);
+	enqueue(frameQueue, &localFramePointer);
 #endif
 }
