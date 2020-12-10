@@ -388,7 +388,7 @@ void* captureServiceHandler(void *threadp) {
 		S2Cnt++;
 		if (S2Cnt >= 30) {
 			addStartTime(&captureArray[S2Cnt - 31]);
-			setIterNumber(&captureArray[S2Cnt - 31], S2Cnt - 31)
+			setIterNumber(&captureArray[S2Cnt - 31], S2Cnt - 31);
 		}
 		captureFrameService(threadParams->camera, threadParams->frameQueue);
 		if (S2Cnt >= 30) {
