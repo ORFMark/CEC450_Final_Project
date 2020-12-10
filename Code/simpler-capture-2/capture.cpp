@@ -357,7 +357,7 @@ void* writeBackServiceHandler(void *threadp) {
 
 		S1Cnt++;
 		log((char*) "Firing Writeback Service");
-		if (S1Cnt >= 30) {
+		if (S1Cnt > 30) {
 			addStartTime(&writebackArray[S1Cnt - 31]);
 			writeBackFrameService(threadParams->frameQueue);
 			addEndTime(&writebackArray[S1Cnt - 31]);
@@ -387,12 +387,12 @@ void* captureServiceHandler(void *threadp) {
 	while (!abortS2) {
 		sem_wait(&semS2);
 		S2Cnt++;
-		if (S2Cnt >= 30) {
+		if (S2Cnt > 30) {
 			addStartTime(&captureArray[S2Cnt - 31]);
 			setIterNumber(&captureArray[S2Cnt - 31], S2Cnt - 31);
 		}
 		captureFrameService(threadParams->camera, threadParams->frameQueue);
-		if (S2Cnt >= 30) {
+		if (S2Cnt > 30) {
 			addEndTime(&captureArray[S2Cnt - 31]);
 		}
 	}
