@@ -23,10 +23,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-
 #include "logging.h"
 #include "util.h"
 #include "frame_handling.h"
+#include "timing.h"
 
 #define USEC_PER_MSEC (1000)
 #define NANOSEC_PER_MSEC (1000000)
@@ -52,6 +52,9 @@ static struct itimerspec last_itime;
 
 static unsigned long long seqCnt = 0;
 
+timeStruct captureArray[NUMBER_OF_ITERATIONS];
+timeStruct writebackArray[NUMBER_OF_ITERATIONS];
+double startTimeMsec;
 
 void Sequencer(int id);
 
@@ -80,7 +83,7 @@ int main(void) {
 	struct timespec current_time_val, current_time_res;
 	double current_realtime, current_realtime_res;
 	FrameQueue queue;
-	CvCapture* camera = cvCreateCameraCapture(0);
+	CvCapture *camera = cvCreateCameraCapture(0);
 	initQueue(&queue, 256);
 	int i, rc, scope, flags = 0;
 
@@ -163,8 +166,6 @@ int main(void) {
 	printf("rt_max_prio=%d\n", rt_max_prio);
 	printf("rt_min_prio=%d\n", rt_min_prio);
 
-
-
 	for (i = 0; i < NUM_THREADS; i++) {
 
 		// run even indexed threads on core 2
@@ -203,7 +204,6 @@ int main(void) {
 
 	// Servcie_1 = RT_MAX-1	@ 50 Hz
 	//
-
 
 	rt_param[0].sched_priority = rt_max_prio - 1;
 	pthread_attr_setschedparam(&rt_sched_attr[0], &rt_param[0]);
@@ -250,7 +250,8 @@ int main(void) {
 
 	// Create Sequencer thread, which like a cyclic executive, is highest prio
 	printf("Start sequencer\n");
-	sequencePeriods = 2000;
+	startTimeMsec = getTimeMsec();
+	sequencePeriods = (NUMBER_OF_ITERATIONS + 30) * 100;
 
 	// Sequencer = RT_MAX	@ 100 Hz
 	//
@@ -277,7 +278,10 @@ int main(void) {
 		else
 			printf("joined thread %d\n", i);
 	}
-
+	writeArrayOfTimeStructs(captureArray, "captureTiming.txt",
+			startTimeMsec, NUMBER_OF_ITERATIONS);
+	writeArrayOfTimeStructs(writebackArray, "writebackTiming.txt",
+			startTimeMsec, NUMBER_OF_ITERATIONS);
 	printf("\nTEST COMPLETE\n");
 }
 
@@ -337,7 +341,7 @@ void* writeBackServiceHandler(void *threadp) {
 	double current_realtime;
 	unsigned long long S1Cnt = 0;
 	threadParams_t *threadParams = (threadParams_t*) threadp;
-
+	Frame garbageFrame;
 	// Start up processing and resource initialization
 	clock_gettime(MY_CLOCK_TYPE, &current_time_val);
 	current_realtime = realtime(&current_time_val);
@@ -351,8 +355,14 @@ void* writeBackServiceHandler(void *threadp) {
 		sem_wait(&semS1);
 
 		S1Cnt++;
-		log((char *)"Firing Writeback Service");
-		writeBackFrameService(threadParams->frameQueue);
+		log((char*) "Firing Writeback Service");
+		if (S1Cnt >= 30) {
+			addStartTime(&writebackArray[S1Cnt - 31]);
+			writeBackFrameService(threadParams->frameQueue);
+			addEndTime(&writebackArray[S1Cnt - 31]);
+		} else {
+			dequeue(threadParams->frameQueue, &garbageFrame);
+		}
 
 	}
 
@@ -376,8 +386,14 @@ void* captureServiceHandler(void *threadp) {
 	while (!abortS2) {
 		sem_wait(&semS2);
 		S2Cnt++;
-		log((char *)"firing frame capture service");
+		if (S2Cnt >= 30) {
+			addStartTime(&captureArray[S2Cnt - 31]);
+			setIterNumber(&captureArray[S2Cnt - 31], S2Cnt - 31)
+		}
 		captureFrameService(threadParams->camera, threadParams->frameQueue);
+		if (S2Cnt >= 30) {
+			addEndTime(&captureArray[S2Cnt - 31]);
+		}
 	}
 
 	pthread_exit((void*) 0);
@@ -398,7 +414,7 @@ void* houghServiceHandler(void *threadp) {
 	while (!abortS3) {
 		sem_wait(&semS3);
 		S3Cnt++;
-		log((char *)"Firing hough service");
+		log((char*) "Firing hough service");
 	}
 
 	pthread_exit((void*) 0);

@@ -8,8 +8,8 @@
 #include "util.h"
 
 typedef struct START_END {
-	uint64 start_time;
-	uint64 end_time;
+	double start_time;
+	double end_time;
 	int32 iterNumber;
 } timeStruct;
 
@@ -18,6 +18,6 @@ void addEndTime(timeStruct * structToAddTo);
 void initTimeStruct(timeStruct * structToInit);
 void setIterNumber(timeStruct * structToModify, int32 iterNumber);
 void writeArrayOfTimeStructs(timeStruct array[], char * label,
-		uint64 startTimeMsec, uint32 arrayLength);
-
+		double startTimeMsec, uint32 arrayLength);
+double getTimeMsec(void);
 #endif
