@@ -421,7 +421,7 @@ void* houghServiceHandler(void *threadp) {
 			abortS3 = true;
 		}
 		//here is some temp stuff to make sure we get timing data
-		if ((S3Cnt-30) % 200 == 0) {
+		if ((S3Cnt-30) % 200 == 0 && (S3Cnt - 30) > 100) {
 			printf("S3 thread @ sec=%6.9lf writing frames 0- %d\n",
 					current_realtime - start_realtime, S3Cnt - 30);
 			writeArrayOfTimeStructs(captureArray, "captureTiming.txt",
