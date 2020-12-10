@@ -278,8 +278,8 @@ int main(void) {
 		else
 			printf("joined thread %d\n", i);
 	}
-	writeArrayOfTimeStructs(captureArray, "captureTiming.txt",
-			startTimeMsec, NUMBER_OF_ITERATIONS);
+	writeArrayOfTimeStructs(captureArray, "captureTiming.txt", startTimeMsec,
+	NUMBER_OF_ITERATIONS);
 	writeArrayOfTimeStructs(writebackArray, "writebackTiming.txt",
 			startTimeMsec, NUMBER_OF_ITERATIONS);
 	printf("\nTEST COMPLETE\n");
@@ -415,6 +415,20 @@ void* houghServiceHandler(void *threadp) {
 		sem_wait(&semS3);
 		S3Cnt++;
 		log((char*) "Firing hough service");
+		if (S3Cnt > (NUMBER_OF_ITERATIONS + 30)) {
+			abortTest = true;
+			abortS3 = true;
+		}
+		//here is some temp stuff to make sure we get timing data
+		if (S3Cnt % 200 == 0) {
+			printf("S3 thread @ sec=%6.9lf\n writing frames 0- %d",
+					current_realtime - start_realtime, S3Cnt - 30);
+			writeArrayOfTimeStructs(captureArray, "captureTiming.txt",
+					startTimeMsec, NUMBER_OF_ITERATIONS);
+			writeArrayOfTimeStructs(writebackArray, "writebackTiming.txt",
+					startTimeMsec, NUMBER_OF_ITERATIONS);
+		}
+
 	}
 
 	pthread_exit((void*) 0);
