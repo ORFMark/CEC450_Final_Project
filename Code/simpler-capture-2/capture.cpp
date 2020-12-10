@@ -278,6 +278,7 @@ int main(void) {
 		else
 			printf("joined thread %d\n", i);
 	}
+	printf("running final writeout\n");
 	writeArrayOfTimeStructs(captureArray, "captureTiming.txt", startTimeMsec,
 	NUMBER_OF_ITERATIONS);
 	writeArrayOfTimeStructs(writebackArray, "writebackTiming.txt",
@@ -420,13 +421,13 @@ void* houghServiceHandler(void *threadp) {
 			abortS3 = true;
 		}
 		//here is some temp stuff to make sure we get timing data
-		if (S3Cnt % 200 == 0) {
-			printf("S3 thread @ sec=%6.9lf\n writing frames 0- %d",
+		if ((S3Cnt-30) % 200 == 0) {
+			printf("S3 thread @ sec=%6.9lf writing frames 0- %d\n",
 					current_realtime - start_realtime, S3Cnt - 30);
 			writeArrayOfTimeStructs(captureArray, "captureTiming.txt",
-					startTimeMsec, NUMBER_OF_ITERATIONS);
+					startTimeMsec, S3Cnt - 30);
 			writeArrayOfTimeStructs(writebackArray, "writebackTiming.txt",
-					startTimeMsec, NUMBER_OF_ITERATIONS);
+					startTimeMsec, S3Cnt - 30);
 		}
 
 	}
